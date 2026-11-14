@@ -1,0 +1,13 @@
+{
+  "extraKnownMarketplaces": {
+    "frontend-slides": {
+      "source": {
+        "source": "git",
+        "url": "https://github.com/zarazhangrui/frontend-slides.git"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "frontend-slides@frontend-slides": true
+  }
+}
