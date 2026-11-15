@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026 em doses · Treino das falas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders:opsz,wght@10..72,700..900&family=Inter+Tight:wght@500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --preto:#0B0B0C;--papel:#F1EEE6;--concreto:#8A8A86;--verde:#C6FF00;--rosa:#FF2D8A;--linha:#2a2a2c;
+  --fs:22px;
+  --f-display:'Big Shoulders',Impact,sans-serif;--f-grot:'Inter Tight',system-ui,sans-serif;--f-mono:'JetBrains Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--preto);color:var(--papel);font-family:var(--f-grot);-webkit-font-smoothing:antialiased}
+body{min-height:100vh;display:flex;flex-direction:column}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.mono{font-family:var(--f-mono);font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+
+/* topo */
+header{position:sticky;top:0;z-index:5;background:var(--preto);border-bottom:1px solid var(--linha);padding:12px 16px 10px}
+.row{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.brand{font-size:11px;color:var(--concreto);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.total{font-size:12px;color:var(--concreto);white-space:nowrap}
+.total b{color:var(--papel)}
+.total.over b{color:var(--rosa)}
+.dots{display:flex;gap:4px;margin-top:10px}
+.dots button{flex:1;height:6px;background:#2a2a2c}
+.dots button.done{background:var(--concreto)}
+.dots button.cur{background:var(--verde)}
+
+/* conteúdo */
+main{flex:1;width:100%;max-width:760px;margin:0 auto;padding:18px 16px 140px}
+.slide-head{display:flex;align-items:flex-end;gap:14px;margin-bottom:14px}
+.num{font-family:var(--f-display);font-weight:900;font-size:96px;line-height:.8;color:var(--verde)}
+.ttl{padding-bottom:4px}
+.ttl .act{font-size:11px;color:var(--concreto);margin-bottom:4px}
+.ttl h1{font-size:26px;font-weight:700;letter-spacing:-.02em;line-height:1.05}
+.tela{border:1px solid var(--linha);padding:10px 12px;margin-bottom:16px;display:flex;gap:10px;align-items:baseline}
+.tela .lbl{font-size:11px;color:var(--concreto);flex:none}
+.tela p{font-size:15px;color:#cfccc4}
+.cue{display:flex;gap:10px;align-items:baseline;background:var(--rosa);color:var(--preto);padding:8px 12px;margin-bottom:12px;font-size:15px;font-weight:600}
+.cue .mono{font-size:11px;flex:none}
+.cue.pause{background:var(--verde)}
+.fala p{font-size:var(--fs);line-height:1.45;margin-bottom:.8em;letter-spacing:-.005em}
+.fala p.hid{color:var(--concreto);border-left:3px solid #2a2a2c;padding:6px 0 6px 12px;cursor:pointer}
+.fala p.hid .tap{display:block;font-family:var(--f-mono);font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#5a5a58;margin-top:4px}
+.fala .ini{letter-spacing:.06em;cursor:pointer;color:#e2dfd6}
+.meta{font-size:12px;color:var(--concreto);margin-top:6px}
+
+/* resumo */
+.sum h2{font-family:var(--f-display);font-weight:900;font-size:64px;line-height:.85;text-transform:uppercase;margin-bottom:14px}
+.sum table{width:100%;border-collapse:collapse;font-size:15px}
+.sum td,.sum th{padding:8px 4px;border-bottom:1px solid var(--linha);text-align:left}
+.sum th{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;color:var(--concreto);font-weight:700}
+.sum td.n{font-family:var(--f-mono);text-align:right;white-space:nowrap}
+.sum .over{color:var(--rosa)}.sum .ok{color:var(--verde)}
+.sum .big{font-family:var(--f-mono);font-size:20px;margin:16px 0}
+.sum .note{color:#cfccc4;font-size:15px;line-height:1.5;margin-top:14px}
+
+/* barra de baixo */
+footer{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--preto);border-top:1px solid var(--linha);padding:10px 12px calc(10px + env(safe-area-inset-bottom))}
+.ctrl{max-width:760px;margin:0 auto}
+.timer{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.timer .t{font-family:var(--f-mono);font-weight:700;font-size:22px;min-width:70px}
+.timer .t.over{color:var(--rosa)}
+.bar{flex:1;height:8px;background:#1d1d1f;position:relative;overflow:hidden}
+.bar i{position:absolute;left:0;top:0;bottom:0;background:var(--verde);width:0}
+.bar.over i{background:var(--rosa)}
+.timer .tgt{font-size:11px;color:var(--concreto);min-width:64px;text-align:right}
+.btns{display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:8px}
+.btns button{border:1px solid var(--linha);padding:12px 6px;font-family:var(--f-mono);font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.btns .play{background:var(--verde);color:var(--preto);border-color:var(--verde)}
+.btns .play.on{background:var(--papel);border-color:var(--papel)}
+.tools{display:flex;gap:6px;margin-top:8px;align-items:center;flex-wrap:wrap}
+.seg{display:flex;border:1px solid var(--linha)}
+.seg button{padding:7px 10px;font-family:var(--f-mono);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--concreto)}
+.seg button.on{background:var(--papel);color:var(--preto)}
+.tools .sp{flex:1}
+.tools .small{padding:7px 10px;border:1px solid var(--linha);font-family:var(--f-mono);font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--concreto)}
+@media (min-width:700px){.ttl h1{font-size:32px}.num{font-size:120px}}
+
+/* conexão com a apresentação */
+.link{font-size:11px;color:var(--concreto);white-space:nowrap}
+.link i{display:inline-block;width:8px;height:8px;border-radius:50%;background:#3a3a3c;margin-right:6px;vertical-align:0}
+.link.on{color:var(--papel)} .link.on i{background:var(--verde)}
+
+/* slides com passos (8 e 9): o parágrafo da regra/fase na tela fica aceso */
+.fala p.passou{opacity:.38}
+.fala p.agora{border-left:3px solid var(--verde);padding-left:12px;margin-left:-15px}
+.fala p.depois{opacity:.6}
+.passos{display:flex;gap:6px;margin:-4px 0 14px}
+.passos span{flex:1;height:4px;background:#2a2a2c}
+.passos span.on{background:var(--verde)}
+
+/* senha (mesma da apresentação) */
+.portao{position:fixed;inset:0;z-index:50;background:var(--papel);color:var(--preto);display:flex;flex-direction:column;justify-content:center;padding:32px 24px;
+  background-image:repeating-radial-gradient(circle at 80% 30%, transparent 0 38px, rgba(11,11,12,.06) 38px 41px)}
+.portao .p-topo{font-family:var(--f-mono);font-weight:700;font-size:11px;letter-spacing:.1em;margin-bottom:18px}
+.portao .p-titulo{font-family:var(--f-display);font-weight:900;font-size:min(26vw,160px);line-height:.82;text-transform:uppercase;margin-bottom:36px}
+.portao .ln{display:block}
+.portao .p-rot,.portao .dica{display:block;font-family:var(--f-mono);font-weight:700;font-size:11px;letter-spacing:.1em;color:#5f5f5b}
+.portao .p-rot{margin-bottom:10px}.portao .dica{margin-top:12px}
+.portao .pin{display:flex;gap:10px}
+.portao .casa{width:64px;height:84px;border:3px solid var(--preto);display:flex;align-items:center;justify-content:center;font-family:var(--f-display);font-weight:900;font-size:60px}
+.portao .casa.atual{box-shadow:inset 0 -8px 0 var(--verde)}
+.portao .casa.cheia{background:var(--preto);color:var(--papel)}
+.portao.erro .casa{border-color:var(--rosa)} .portao.erro .casa.cheia{background:var(--rosa)} .portao.erro .dica{color:var(--rosa)}
+.portao.certo .casa{background:var(--verde);color:var(--preto)}
+.portao input{position:absolute;opacity:0;left:0;top:0;width:1px;height:1px}
+</style>
+</head>
+<body>
+
+<div id="portao" class="portao">
+  <span class="p-topo" data-in>ACESSO RESTRITO · TREINO</span>
+  <h1 class="p-titulo" data-in><span class="ln">2026</span><span class="ln">EM DOSES</span></h1>
+  <div>
+    <span class="p-rot" data-in>SENHA</span>
+    <div class="pin" data-in><span class="casa"></span><span class="casa"></span><span class="casa"></span><span class="casa"></span></div>
+    <span class="dica" data-in>DIGITE OS 4 NÚMEROS</span>
+  </div>
+  <input type="password" inputmode="numeric" autocomplete="off" maxlength="4" aria-label="Senha">
+</div>
+
+<header>
+  <div class="row">
+    <span class="mono brand">2026 em doses · treino</span>
+    <span class="mono link" id="link"><i></i><span id="link-t">CONECTANDO</span></span>
+    <span class="mono total" id="total">TOTAL <b>0:00</b> / 7–9 MIN</span>
+  </div>
+  <div class="dots" id="dots"></div>
+</header>
+
+<main id="main"></main>
+
+<footer>
+  <div class="ctrl">
+    <div class="timer">
+      <span class="t" id="tSlide">0:00</span>
+      <div class="bar" id="bar"><i></i></div>
+      <span class="mono tgt" id="tgt">ALVO 0:00</span>
+    </div>
+    <div class="btns">
+      <button id="prev">← Volta</button>
+      <button id="play" class="play">▶ Começar</button>
+      <button id="next">Próximo →</button>
+    </div>
+    <div class="tools">
+      <div class="seg" id="mode">
+        <button data-m="ler" class="on">Ler</button>
+        <button data-m="dicas">Iniciais</button>
+        <button data-m="cegas">Às cegas</button>
+      </div>
+      <span class="sp"></span>
+      <button class="small" id="fsm">A−</button>
+      <button class="small" id="fsp">A+</button>
+      <button class="small" id="reset">Zerar</button>
+    </div>
+  </div>
+</footer>
+
+<script src="lib/gsap/gsap.min.js"></script>
+<script type="module">
+import { portao } from './js/portao.js';
+import { abreCanal } from './js/canal.js';
+/* ============================================================
+   FALAS (do roteiro.md) — uma entrada por slide
+   ============================================================ */
+const SLIDES=[
+ {act:'Ato 1 · A abertura',title:'Abertura',tela:'2026 em doses',
+  cues:[{t:'Antes de começar: avisar que a apresentação tem luz piscante.',k:'aviso'}],
+  fala:['Vocês me perguntaram como foi o meu ano. Eu podia mostrar fotos de viagem ou fazer aquela retrospectiva clássica, mas resolvi mostrar a química que manteve o meu cérebro funcionando. Sou paciente psiquiátrico, então o meu calendário tem estações e feriados como o de todo mundo, e tem também ajustes de dose, trocas de molécula e semanas de paciência esperando o remédio fazer efeito.']},
+ {act:'Ato 2 · A linha do tempo real',title:'Janeiro',tela:'Janeiro · Fluoxetina 80 mg por dia',
+  fala:['O ano começou com uma molécula bem conhecida, na dose máxima. Em janeiro eu tomava 80 mg de fluoxetina por dia. A apresentação padrão é de 20 mg, então a minha manhã começava com 4 comprimidos de uma vez. Só em janeiro foram 124.']},
+ {act:'Ato 2 · A linha do tempo real',title:'Fevereiro a abril',tela:'Fevereiro a abril · Vortioxetina 10 mg por dia',
+  fala:['Em fevereiro veio a primeira grande mudança: saiu a fluoxetina e entrou a vortioxetina, começando com 10 mg. O ritual da manhã encolheu para 1 comprimido. Fiquei assim fevereiro, março e abril, me adaptando e observando como a cabeça respondia.']},
+ {act:'Ato 2 · A linha do tempo real',title:'Maio e junho',tela:'Maio e junho · 2 comprimidos por dia',
+  fala:['Em maio o tratamento precisou de reforço. A vortioxetina subiu para 15 mg, ainda 1 comprimido, e entrou um segundo jogador: cloridrato de bupropiona de liberação prolongada, 150 mg, mais 1 comprimido. Maio e junho foram de 2 comprimidos por dia.']},
+ {act:'Ato 2 · A linha do tempo real',title:'Julho a outubro',tela:'Julho a outubro · 3 comprimidos por dia',
+  fala:['Em julho entrou uma terceira substância, a naltrexona 50 mg. De julho até outubro, todo dia, eram 3 comprimidos: vortioxetina 15 mg, bupropiona 150 mg e naltrexona 50 mg.']},
+ {act:'Ato 2 · A linha do tempo real',title:'Desde novembro',tela:'Desde novembro · 5 comprimidos por dia',
+  fala:['No começo de novembro veio o ajuste mais recente. Saiu a naltrexona e entrou o topiramato de 100 mg, 1 comprimido. A bupropiona dobrou para 300 mg, que são 2 comprimidos de 150, e a vortioxetina subiu para 20 mg, 2 comprimidos de 10. Hoje eu tomo 5 comprimidos por dia.']},
+ {act:'Ato 3 · A virada',title:'A pergunta',tela:'E se nunca tivessem inventado o comprimido?',pause:3,
+  cues:[{t:'Pausa de 3 segundos antes de falar.',k:'pausa'}],
+  fala:['Até aqui parece lista de farmácia. Engolir 1, 2, 4 ou 5 comprimidos com um copo d’água leva dez segundos, e ninguém em volta percebe. Mas eu fiquei pensando: e se a indústria farmacêutica nunca tivesse inventado a compressão de pós? E se, nesse universo paralelo, todo tratamento psiquiátrico fosse injetável e eu tivesse que aplicar em casa, na pia do banheiro, toda manhã, com ampola e seringa?']},
+ {act:'Ato 3 · A virada',title:'As regras do jogo',tela:'As regras do jogo · 4 cliques revelam as 4 regras',
+  fala:['Pra brincadeira fazer sentido, eu segui as regras de farmacotécnica e de enfermagem na hora de fazer a conta.',
+   'Primeira regra: não dá pra misturar remédios diferentes na mesma seringa. Cada molécula pede um pH e um solvente específicos. Se eu juntasse bupropiona, vortioxetina e naltrexona na mesma seringa, elas iam reagir e cristalizar dentro da agulha. Então cada princípio ativo exige uma seringa e um furo próprios.',
+   'Segunda regra: no comprimido, dobrar a dose é engolir dois. Na seringa, é só puxar o dobro de líquido. Continua sendo uma seringa só, no máximo uma maior.',
+   'Terceira regra: agulha e seringa são descartáveis. Usou, jogou fora. E cada aplicação gasta duas agulhas: uma grossa, a 40x12, pra puxar o líquido da ampola, e outra fina pra aplicar. Por isso até as seringas de 1 mL teriam que ser das de bico solto, sem agulha fixa, pra dar pra fazer a troca.',
+   'Quarta regra: o volume decide onde a agulha entra. No subcutâneo cabe mais ou menos 1 mL, no deltoide, até 2 mL, e passou disso, vai pra coxa. Como nenhum desses remédios existe em ampola de verdade, eu inventei concentrações que coubessem nesses limites.']},
+ {act:'Ato 4 · A retrospectiva em seringas',title:'O ano em seringas',tela:'O ano em seringas · 5 cliques revelam as 5 fases',
+  fala:['Traduzido pra esse método, o meu ano fica assim.',
+   'Janeiro: os 4 comprimidos de fluoxetina virariam 2 mL numa seringa de 3 mL. Quebra a ampola, puxa com a 40x12, troca pela 25x7, passa álcool 70% e aplica no deltoide. Uma picada por dia.',
+   'De fevereiro a abril, a vortioxetina de 10 mg daria meio mililitro. Pouco volume, então dá pra ir de seringa de 1 mL, aquela fininha de insulina, no subcutâneo da barriga, com agulha 13x4,5. Era a fase da picada que quase não dói. Só nesses quatro primeiros meses, 120 seringas.',
+   'Em maio e junho entra a bupropiona, e com ela a segunda seringa: 1,5 mL numa seringa de 3 mL, no deltoide. A vortioxetina continua na de 1 mL, no subcutâneo, agora um pouco mais cheia. Uma em cada braço, revezando o lugar pra não formar nódulo. Mais 122.',
+   'De julho a outubro, a naltrexona traz a terceira. A bupropiona fica no deltoide esquerdo, a naltrexona vai pro direito e a vortioxetina segue na barriga. Três ampolas quebradas antes do café. Nesses quatro meses, 369 seringas.',
+   'E desde o começo de novembro, com a bupropiona em 300 mg, a conta muda de lugar. Seriam 3 mL, e isso já passa do limite do deltoide. Então ela troca a seringa de 3 pela de 5 mL e desce pra coxa. O topiramato assume o deltoide com 2 mL, que é o máximo que cabe ali, e a vortioxetina de 20 mg enche a seringa de 1 mL até a boca. Eu tomo 5 comprimidos hoje, mas continuam sendo 3 substâncias, então seguem 3 seringas por dia. Se nada mudar até o réveillon, são mais 183.']},
+ {act:'Ato 5 · O fechamento',title:'O total',tela:'794 · seringas em 365 dias',
+  fala:['Se não existisse comprimido, e se o esquema atual for até o fim do ano, o meu 2026 teria exigido 794 seringas: 334 de 1 mL, 399 de 3 mL e 61 de 5 mL. Dá mais de duas injeções por dia, todos os dias do ano, e quase 1.600 agulhas estéreis, porque a agulha que puxa o remédio da ampola é trocada pela de aplicação para não machucar a pele.']},
+ {act:'Ato 6 · De volta ao mundo real',title:'Tela dividida',tela:'794 seringas × 1.009 comprimidos',
+  cues:[{t:'No fim: avançar para o slide 12.',k:'deixa',end:true}],
+  fala:['Agora voltando pro nosso universo, onde alguém lá atrás teve a boa ideia de prensar o remédio em comprimido. Fiz a mesma conta com os comprimidos de verdade e, se nada mudar até dezembro, o ano fecha em 1.009. Dá mais comprimido do que seringa, porque no comprimido dobrar a dose é engolir mais um. Foram cinco moléculas e cinco configurações diferentes num ano só.',
+   'Eu sei que, olhando de fora, cinco trocas num ano podem parecer coisa que não deu certo. Pra mim, cada mudança foi uma resposta a alguma coisa que eu e quem me acompanha percebemos no caminho: uma dose que não segurava, um sintoma que precisava de reforço, um efeito que pedia ajuste. Tratamento psiquiátrico tem muito disso: tentar, esperar semanas pra ver se funciona, observar e ajustar de novo. Cansa, e eu continuo fazendo.',
+   'Então, se é pra agradecer alguma coisa de 2026, eu agradeço a quem inventou a compressão de pós, porque as minhas manhãs seriam bem mais sofridas na pia do banheiro. E agradeço a vocês, que perguntaram como foi o meu ano e tiveram paciência de ouvir a resposta inteira, com bula e tudo.']},
+ {act:'Ato 6 · De volta ao mundo real',title:'Obrigado',tela:'OBRIGADO · 2026 em doses',
+  fala:['O meu 2026 foi isso: 1.009 comprimidos, quase nenhuma seringa e uma cabeça que segue em cima do pescoço. Obrigado.']}
+];
+
+/* ============================================================
+   TEMPO ALVO: ~145 palavras por minuto + pausas marcadas
+   ============================================================ */
+/* passos: o slide 8 revela 4 regras e o 9 revela 5 fases, um clique por vez.
+   cada parágrafo da fala corresponde a um passo (o primeiro parágrafo é a introdução do passo 1). */
+const PASSOS={7:4,8:5};
+const PARA2P={7:[0,0,1,2,3],8:[0,0,1,2,3,4]};
+const WPM=145;
+SLIDES.forEach(s=>{s.words=s.fala.join(' ').split(/\s+/).length;s.target=Math.round(s.words/WPM*60)+(s.pause||0)+4});
+const TOTAL_TARGET=SLIDES.reduce((a,s)=>a+s.target,0);
+
+/* ============================================================
+   ESTADO
+   ============================================================ */
+const store={get(k,d){try{const v=localStorage.getItem('treino2026.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('treino2026.'+k,JSON.stringify(v))}catch(e){}}};
+const S={i:0,p:0,mode:store.get('mode','ler'),fs:store.get('fs',22),running:false,spent:SLIDES.map(()=>0),last:0,revealed:{},summary:false};
+const $=id=>document.getElementById(id);
+const mmss=s=>{s=Math.max(0,Math.round(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function initials(p){return p.split(/(\s+)/).map(w=>{if(/^\s+$/.test(w))return w;const m=w.match(/^([^\wÀ-ÿ]*)([\wÀ-ÿ])([\wÀ-ÿ'’\-.,]*)(.*)$/);if(!m)return w;
+  const num=/^\d/.test(m[2]);return num?w:m[1]+m[2]+m[3].replace(/[\wÀ-ÿ'’\-]/g,'').replace(/[^.,]/g,'')+m[4]}).join('')}
+function esc(t){return t.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
+function render(){
+  document.documentElement.style.setProperty('--fs',S.fs+'px');
+  const main=$('main');
+  if(S.summary){renderSummary();return}
+  const s=SLIDES[S.i];
+  const cuesTop=(s.cues||[]).filter(c=>!c.end),cuesEnd=(s.cues||[]).filter(c=>c.end);
+  const cueHtml=c=>`<div class="cue ${c.k==='pausa'?'pause':''}"><span class="mono">${c.k}</span><span>${esc(c.t)}</span></div>`;
+  const mapa=PARA2P[S.i];
+  const fase=k=>!mapa?'':(mapa[k]<S.p?' passou':mapa[k]===S.p?' agora':' depois');
+  const paras=s.fala.map((p,k)=>{
+    const key=S.i+'-'+k;
+    if(S.mode==='cegas'&&!S.revealed[key]){const w=p.split(/\s+/);return `<p class="hid${fase(k)}" data-k="${key}" data-i="${k}">${esc(w.slice(0,4).join(' '))}…<span class="tap">toque para ver · ${w.length} palavras</span></p>`}
+    if(S.mode==='dicas'&&!S.revealed[key])return `<p class="ini${fase(k)}" data-k="${key}" data-i="${k}" title="toque para ver o texto">${esc(initials(p))}</p>`;
+    return `<p class="${fase(k).trim()}" data-k="${key}" data-i="${k}">${esc(p)}</p>`;
+  }).join('');
+  main.innerHTML=`
+    <div class="slide-head"><div class="num">${String(S.i+1).padStart(2,'0')}</div>
+      <div class="ttl"><div class="mono act">${esc(s.act)}</div><h1>${esc(s.title)}</h1></div></div>
+    <div class="tela"><span class="mono lbl">Tela</span><p>${esc(s.tela)}</p></div>
+    ${PASSOS[S.i]?`<div class="passos">${Array.from({length:PASSOS[S.i]},(_,k)=>`<span class="${k<=S.p?'on':''}"></span>`).join('')}</div>`:''}
+    ${cuesTop.map(cueHtml).join('')}
+    <div class="fala">${paras}</div>
+    ${cuesEnd.map(cueHtml).join('')}
+    <div class="mono meta">${s.words} palavras · alvo ${mmss(s.target)}</div>`;
+  main.querySelectorAll('.fala p[data-k]').forEach(p=>p.addEventListener('click',()=>{const k=p.dataset.k;if(S.mode!=='ler'){S.revealed[k]=!S.revealed[k];render()}else if(mapa)go(S.i,mapa[+p.dataset.i])}));
+  $('dots').querySelectorAll('button').forEach((b,k)=>{b.className=k===S.i?'cur':(S.spent[k]>0?'done':'')});
+  const temMais=PASSOS[S.i]&&S.p<PASSOS[S.i]-1;
+  $('next').textContent=temMais?(S.i===7?'Regra →':'Fase →'):(S.i===SLIDES.length-1?'Fim →':'Próximo →');
+  tick(true);
+}
+function renderSummary(){
+  const tot=S.spent.reduce((a,b)=>a+b,0);
+  const rows=SLIDES.map((s,k)=>{const d=S.spent[k],cls=d>s.target*1.25?'over':(d>0?'ok':'');
+    return `<tr><td>${String(k+1).padStart(2,'0')} · ${esc(s.title)}</td><td class="n">${mmss(s.target)}</td><td class="n ${cls}">${mmss(d)}</td></tr>`}).join('');
+  const verdict=tot<420?'Abaixo dos 7 min: dá pra respirar mais nas pausas.':tot>540?'Passou dos 9 min: veja os slides em rosa, que foram os mais longos.':'Dentro dos 7 a 9 minutos.';
+  $('main').innerHTML=`<div class="sum"><h2>Ensaio<br>completo</h2>
+    <div class="big mono">Total ${mmss(tot)} <span style="color:var(--concreto)">/ alvo ${mmss(TOTAL_TARGET)}</span></div>
+    <table><tr><th>Slide</th><th style="text-align:right">Alvo</th><th style="text-align:right">Você</th></tr>${rows}</table>
+    <p class="note">${verdict} Rosa = 25% acima do alvo do slide. Os alvos supõem uns 145 palavras por minuto, mais as pausas marcadas.</p></div>`;
+  $('dots').querySelectorAll('button').forEach(b=>b.className='done');
+}
+
+/* ============================================================
+   CRONÔMETRO
+   ============================================================ */
+function tick(force){
+  const now=performance.now();
+  if(S.running&&!S.summary){S.spent[S.i]+=(now-S.last)/1000}
+  S.last=now;
+  const tot=S.spent.reduce((a,b)=>a+b,0);
+  const totEl=$('total');totEl.innerHTML=`TOTAL <b>${mmss(tot)}</b> / 7–9 MIN`;totEl.classList.toggle('over',tot>540);
+  if(!S.summary){
+    const s=SLIDES[S.i],d=S.spent[S.i],over=d>s.target;
+    $('tSlide').textContent=mmss(d);$('tSlide').classList.toggle('over',over);
+    $('tgt').textContent='ALVO '+mmss(s.target);
+    $('bar').classList.toggle('over',over);$('bar').firstElementChild.style.width=Math.min(100,d/s.target*100)+'%';
+  }
+}
+setInterval(tick,250);
+function setRunning(on){S.running=on;S.last=performance.now();const b=$('play');b.classList.toggle('on',on);b.textContent=on?'❚❚ Pausar':(S.spent.some(x=>x>0)?'▶ Continuar':'▶ Começar')}
+
+/* ============================================================
+   NAVEGAÇÃO
+   ============================================================ */
+let canal=null;
+function go(i,p=0,o={}){tick();if(i>=SLIDES.length){S.summary=true;setRunning(false);render();return}
+  S.summary=false;const mudou=i!==S.i;S.i=Math.max(0,Math.min(SLIDES.length-1,i));S.p=Math.max(0,Math.min((PASSOS[S.i]||1)-1,p));render();
+  if(mudou)window.scrollTo(0,0);else{const a=document.querySelector('.fala p.agora');a&&a.scrollIntoView({block:'center',behavior:'smooth'})}
+  if(!o.remoto&&canal)canal.envia({tipo:'vai',s:S.i+1,p:S.p})}
+function avanca(){if(S.summary)return;if(PASSOS[S.i]&&S.p<PASSOS[S.i]-1)go(S.i,S.p+1);else go(S.i+1,0)}
+function volta(){if(S.summary){S.summary=false;render();return}if(S.p>0)go(S.i,S.p-1);else if(S.i>0)go(S.i-1,(PASSOS[S.i-1]||1)-1)}
+$('next').onclick=avanca;
+$('prev').onclick=volta;
+$('play').onclick=()=>setRunning(!S.running);
+$('reset').onclick=()=>{S.spent=SLIDES.map(()=>0);S.revealed={};S.summary=false;S.i=0;setRunning(false);render()};
+$('fsm').onclick=()=>{S.fs=Math.max(16,S.fs-2);store.set('fs',S.fs);render()};
+$('fsp').onclick=()=>{S.fs=Math.min(40,S.fs+2);store.set('fs',S.fs);render()};
+$('mode').querySelectorAll('button').forEach(b=>{b.classList.toggle('on',b.dataset.m===S.mode);b.onclick=()=>{S.mode=b.dataset.m;S.revealed={};store.set('mode',S.mode);$('mode').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));render()}});
+const dots=$('dots');SLIDES.forEach((s,k)=>{const b=document.createElement('button');b.title=s.title;b.onclick=()=>go(k);dots.appendChild(b)});
+addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key==='PageDown'){e.preventDefault();avanca()}
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();$('prev').onclick()}
+  else if(e.key===' '){e.preventDefault();setRunning(!S.running)}
+});
+let tx=null,ty=null;
+$('main').addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY},{passive:true});
+$('main').addEventListener('touchend',e=>{if(tx==null)return;const dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty;if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5)dx<0?avanca():volta();tx=null});
+render();
+
+/* senha e ligação com a apresentação: o celular manda 'vai', a apresentação responde 'pos'
+   (quando você avança pelo teclado do computador, o celular acompanha) */
+const sala=await portao();
+canal=abreCanal(sala,m=>{if(m.tipo==='pos'&&!S.summary)go(m.s-1,m.p||0,{remoto:true})},
+  st=>{$('link').classList.toggle('on',st==='on');$('link-t').textContent=st==='on'?'CONECTADO':'SEM CONEXÃO'});
+</script>
+</body>
+</html>

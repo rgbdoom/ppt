@@ -15,7 +15,11 @@ async function sha256(txt) {
 export function portao() {
   const el = document.getElementById('portao');
   // já liberado nesta aba: não pede de novo ao recarregar
-  try { if (sessionStorage.getItem('2026-ok') === '1') { el.remove(); return Promise.resolve(); } } catch {}
+  // devolve a "sala" do canal com o celular, derivada da senha (só quem sabe a senha chega nela)
+  try {
+    const sala = sessionStorage.getItem('2026-sala');
+    if (sessionStorage.getItem('2026-ok') === '1' && sala) { el.remove(); return Promise.resolve(sala); }
+  } catch {}
 
   const campo = el.querySelector('input'), casas = [...el.querySelectorAll('.casa')], dica = el.querySelector('.dica');
   const gsap = window.gsap;
@@ -42,10 +46,11 @@ export function portao() {
       desenha();
       if (campo.value.length < N) return;
       if ((await sha256(campo.value)) === HASH) {
-        try { sessionStorage.setItem('2026-ok', '1'); } catch {}
+        const sala = '2026-em-doses-' + (await sha256('sala:' + campo.value)).slice(0, 24);
+        try { sessionStorage.setItem('2026-ok', '1'); sessionStorage.setItem('2026-sala', sala); } catch {}
         dica.textContent = 'LIBERADO';
         el.classList.add('certo');
-        gsap.to(el, { yPercent: -100, duration: 1.1, ease: 'expo.inOut', delay: 0.35, onComplete: () => { el.remove(); ok(); } });
+        gsap.to(el, { yPercent: -100, duration: 1.1, ease: 'expo.inOut', delay: 0.35, onComplete: () => { el.remove(); ok(sala); } });
       } else {
         el.classList.add('erro');
         dica.textContent = 'SENHA INCORRETA';

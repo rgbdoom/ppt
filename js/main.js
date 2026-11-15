@@ -10,6 +10,7 @@ import { criaItens } from './itens.js';
 import { SLIDES, layout } from './layouts.js';
 import { FASES, SUBS } from './dados.js';
 import { portao } from './portao.js';
+import { abreCanal } from './canal.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -123,8 +124,9 @@ function sai(sec, corte) {
 
 /* ---------- navegação ---------- */
 let n = 1, passo = 0, iniciado = false;
+let canal = null;   // ligado depois da senha
 
-function vai(novoN, novoPasso = 0) {
+function vai(novoN, novoPasso = 0, opc = {}) {
   const mudouSlide = novoN !== n || !iniciado;
   const cfg = SLIDES[novoN - 1];
   // o slide 7 entra e sai em corte seco: o silêncio visual acompanha a pausa da fala
@@ -154,6 +156,7 @@ function vai(novoN, novoPasso = 0) {
   if (n === 9) marcaFase(passo);
 
   ganchos[n] && ganchos[n](passo, mudouSlide);
+  if (!opc.remoto && canal && iniciado) canal.envia({ tipo: 'pos', s: n, p: passo });
 }
 
 function avanca() {
@@ -223,7 +226,14 @@ const ganchos = {
 };
 
 /* ---------- senha antes de tudo (bloqueio simples) ---------- */
-await portao();
+const sala = await portao();
+
+/* ---------- controle pelo celular (treino.html): o celular manda 'vai', a apresentação responde 'pos' ---------- */
+canal = abreCanal(sala, m => {
+  if (m.tipo !== 'vai') return;
+  if (!iniciado) { start.classList.add('gone'); iniciado = true; }   // a música ainda precisa de um toque aqui
+  vai(m.s, m.p || 0, { remoto: true });
+});
 
 /* ---------- início: o navegador só libera som depois de um gesto ---------- */
 const start = $('#start');
