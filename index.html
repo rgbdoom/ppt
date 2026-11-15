@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026 em doses</title>
+
+<!-- Fontes: Google Fonts quando há internet; sem conexão, caem nas genéricas do CSS -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders:opsz,wght@10..72,100..900&family=Inter+Tight:wght@500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/deck.css">
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "./lib/three/build/three.module.js",
+    "three/addons/": "./lib/three/examples/jsm/"
+  }
+}
+</script>
+<script src="lib/gsap/gsap.min.js"></script>
+<script src="lib/gsap/SplitText.min.js"></script>
+</head>
+<body>
+<!--
+  Só o texto de TELA do roteiro entra aqui. As falas não entram em lugar nenhum.
+  Navegação: → / PageDown / clique = avança · ← / PageUp = volta
+  ESPAÇO música · F tela cheia · M modo calmo · R modo reserva (sem 3D)
+-->
+<div class="viewport">
+<div class="stage" id="stage" data-tema="E">
+
+  <div id="gl"></div>
+  <canvas id="reserva" hidden></canvas>
+
+  <div id="slides">
+
+    <!-- 01 · ABERTURA -->
+    <section class="slide s1" data-n="1">
+      <h1 class="display titulo-abertura" data-split>
+        <span class="ln">2026</span><span class="ln">EM DOSES</span>
+      </h1>
+    </section>
+
+    <!-- 02 a 06 · FASES DOS COMPRIMIDOS (montadas pelo main.js a partir de dados.js) -->
+    <section class="slide fase" data-n="2"></section>
+    <section class="slide fase" data-n="3"></section>
+    <section class="slide fase" data-n="4"></section>
+    <section class="slide fase" data-n="5"></section>
+    <section class="slide fase" data-n="6"></section>
+
+    <!-- 07 · A VIRADA (parado, sem glitch) -->
+    <section class="slide s7" data-n="7">
+      <p class="pergunta">E se nunca tivessem inventado o comprimido?</p>
+    </section>
+
+    <!-- 08 · AS REGRAS DO JOGO -->
+    <section class="slide s8" data-n="8">
+      <h2 class="display titulo-regras" data-split><span class="ln">AS REGRAS</span><span class="ln">DO JOGO</span></h2>
+      <div class="regras">
+        <div class="regra" data-r="0"><span class="mono num">01</span><b>1 seringa por molécula</b><span class="mono">INCOMPATIBILIDADE FÍSICO-QUÍMICA</span></div>
+        <div class="regra" data-r="1"><span class="mono num">02</span><b>Volume maior, não mais seringas</b><span class="mono">AJUSTE DE DOSE</span></div>
+        <div class="regra" data-r="2"><span class="mono num">03</span><b>Zero reutilização</b><span class="mono">BIOSSEGURANÇA</span></div>
+        <div class="regra" data-r="3"><span class="mono num">04</span><b>O volume manda no local</b><span class="mono">SUBCUTÂNEO ~1 ML · DELTOIDE 2 ML · COXA ~4 ML</span></div>
+      </div>
+      <figure class="adesivo meme-prev"><img src="img/meme-seringa-medicada.jpg" alt=""></figure>
+      <figure class="foto mesa"><img src="img/foto-mesa-reducao-danos.jpg" alt=""><figcaption class="mono">DESCARTE: OK</figcaption></figure>
+    </section>
+
+    <!-- 09 · O ANO EM SERINGAS (texto trocado a cada fase pelo main.js) -->
+    <section class="slide s9" data-n="9">
+      <div class="chip mono" id="s9-chip">FASE 1 / 5 · JAN</div>
+      <p class="anchor s9-frase" id="s9-frase"></p>
+      <div class="sigma"><span class="mono">SERINGAS ATÉ AQUI</span><span class="display" id="s9-sigma">031</span></div>
+      <div class="fase-total"><span class="display" id="s9-total">31</span><span class="mono" id="s9-total-l">SERINGAS EM JANEIRO</span></div>
+      <span class="display seta">→</span>
+      <figure class="foto chuco"><img src="img/meme-chucodromo.jpg" alt=""></figure>
+    </section>
+
+    <!-- 10 · O TOTAL -->
+    <section class="slide s10" data-n="10">
+      <div class="chip mono" data-in>365 DIAS</div>
+      <div class="total"><span class="display espectro respira" id="n794">794</span><span class="mono rot-total">SERINGAS</span></div>
+      <div class="quebra" data-in>
+        <p><b>334</b> de 1 mL · <b>399</b> de 3 mL · <b>61</b> de 5 mL</p>
+        <p class="mono">1.588 AGULHAS: 794 DE 40X12 PARA ASPIRAR · 460 DE 25X7 E 334 DE 13X4,5 PARA APLICAR</p>
+      </div>
+    </section>
+
+    <!-- 11 · DE VOLTA AO MUNDO REAL (tela dividida; depois da entrada, tudo para) -->
+    <section class="slide s11" data-n="11">
+      <div class="lado esq">
+        <span class="mono">UNIVERSO PARALELO</span>
+        <div class="riscado"><span class="display">794</span><i class="risco"></i></div>
+        <span class="mono">SERINGAS</span>
+        <figure class="adesivo meme-berlim"><img src="img/meme-berlim.jpg" alt=""></figure>
+      </div>
+      <div class="lado dir">
+        <span class="mono">VIDA REAL</span>
+        <span class="display" id="n1009">1.009</span>
+        <span class="mono">COMPRIMIDOS</span>
+        <p class="anchor fatos">5 moléculas · 5 configurações · 1 ano</p>
+      </div>
+    </section>
+
+    <!-- 12 · OBRIGADO -->
+    <section class="slide s12" data-n="12">
+      <h2 class="display obrigado" data-split><span class="ln">OBRIGADO</span></h2>
+    </section>
+  </div>
+
+  <!-- rótulos dos objetos 3D (mesmos px) -->
+  <div id="rotulos"></div>
+
+  <!-- camada fixa: numeração, cruzes de registro, linha do tempo das fases -->
+  <div class="global">
+    <span class="xreg tl"></span><span class="xreg tr"></span><span class="xreg bl"></span><span class="xreg br"></span>
+    <span class="mono num-slide" id="num-slide">SLIDE 01 / 12</span>
+    <div class="linha" id="linha"></div>
+  </div>
+
+  <button id="start" class="start mono">COMEÇAR</button>
+
+  <!-- tela de senha (bloqueio simples) -->
+  <div id="portao" class="portao">
+    <span class="xreg tl"></span><span class="xreg tr"></span><span class="xreg bl"></span><span class="xreg br"></span>
+    <span class="mono p-topo" data-in>ACESSO RESTRITO</span>
+    <h1 class="display p-titulo" data-in><span class="ln">2026</span><span class="ln">EM DOSES</span></h1>
+    <div class="p-direita">
+      <span class="mono p-rot" data-in>SENHA</span>
+      <div class="pin" data-in><span class="casa"></span><span class="casa"></span><span class="casa"></span><span class="casa"></span></div>
+      <span class="mono dica" data-in>DIGITE OS 4 NÚMEROS</span>
+    </div>
+    <input type="password" inputmode="numeric" autocomplete="off" maxlength="4" aria-label="Senha">
+  </div>
+</div>
+</div>
+
+<audio id="trilha" src="audio/trilha.mp3" loop preload="auto"></audio>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

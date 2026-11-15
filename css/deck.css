@@ -1,0 +1,173 @@
+/* ============================================================
+   2026 EM DOSES · tokens (design.md §4, §5, §6)
+   ============================================================ */
+:root{
+  --preto:#0B0B0C; --papel:#F1EEE6; --concreto:#8A8A86;
+  --verde:#C6FF00; --rosa:#FF2D8A; --laranja:#FF4F1A; --azul:#2B3BFF; --uv:#8F5BFF;
+  --f-display:'Big Shoulders', Impact, 'Arial Narrow', sans-serif;
+  --f-grot:'Inter Tight', 'Helvetica Neue', Arial, sans-serif;
+  --f-mono:'JetBrains Mono', 'Courier New', monospace;
+  --m:64px;
+  --spectrum:linear-gradient(100deg,var(--laranja) 0%,var(--rosa) 26%,var(--uv) 50%,var(--azul) 70%,var(--verde) 100%);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#000}
+.viewport{position:fixed;inset:0;overflow:hidden;background:#000}
+.stage{position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:hidden;transform-origin:0 0;
+  --bg:var(--preto);--ink:var(--papel);--dim:var(--concreto);--acento:var(--verde);--acento-ink:var(--preto);
+  background:var(--bg);color:var(--ink);transition:color .8s}
+/* temas: escuro, claro (papel), fluo cheio, dividido */
+.stage[data-tema="C"]{--bg:var(--papel);--ink:var(--preto);--dim:#5f5f5b;--acento:var(--preto);--acento-ink:var(--papel)}
+.stage[data-tema="F"]{--bg:var(--verde);--ink:var(--preto);--dim:#3b4a00;--acento:var(--preto);--acento-ink:var(--verde)}
+
+#gl,#reserva{position:absolute;inset:0}
+#gl canvas,#reserva{display:block;width:1920px!important;height:1080px!important;max-width:none}
+
+.mono{font-family:var(--f-mono);font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.display{font-family:var(--f-display);font-weight:900;line-height:.8;text-transform:uppercase;font-variation-settings:"opsz" 72}
+.anchor{font-family:var(--f-grot);font-weight:700;font-size:48px;line-height:1.1;color:var(--ink)}
+.chip{display:inline-block;padding:4px 14px;font-size:22px;background:var(--acento);color:var(--acento-ink)}
+
+/* ---------- slides ---------- */
+.slide{position:absolute;inset:0;visibility:hidden;pointer-events:none}
+.slide.ativo{visibility:visible}
+.slide > *{position:absolute}
+.ln{display:block}
+#reserva[hidden],#gl[hidden]{display:none!important}
+
+/* ---------- camada fixa ---------- */
+.global{position:absolute;inset:0;pointer-events:none}
+.xreg{position:absolute;width:26px;height:26px}
+.xreg::before,.xreg::after{content:"";position:absolute;background:var(--dim)}
+.xreg::before{left:12px;top:0;width:2px;height:26px}
+.xreg::after{top:12px;left:0;height:2px;width:26px}
+.xreg.tl{left:40px;top:40px}.xreg.tr{right:40px;top:40px}.xreg.bl{left:40px;bottom:40px}.xreg.br{right:40px;bottom:40px}
+.num-slide{position:absolute;left:var(--m);top:46px;font-size:20px;color:var(--dim)}
+
+/* linha do tempo das 5 fases (slides 2–6 e 9): a mesma régua nos comprimidos e nas seringas */
+.linha{position:absolute;left:var(--m);right:var(--m);bottom:52px;display:flex;gap:6px;opacity:0}
+.linha .seg{position:relative;height:12px;background:var(--dim);opacity:.35;transition:opacity .6s,background .6s}
+.linha .seg span{position:absolute;left:0;bottom:20px;white-space:nowrap;font-size:18px;color:var(--dim);transition:color .6s}
+.linha .seg.feita{opacity:.7}
+.linha .seg.atual{background:var(--acento);opacity:1}
+.linha .seg.atual span{color:var(--ink)}
+
+/* rótulos dos objetos 3D */
+#rotulos{position:absolute;inset:0;pointer-events:none}
+.rot{position:absolute;white-space:nowrap;color:var(--ink)}
+.rot.al-c{transform:translateX(-50%);text-align:center}
+.rot.al-r{transform:translateX(-100%);text-align:right}
+.rot-pil{font-size:20px;line-height:1.5;color:var(--dim)}
+.rot-pil b{color:var(--ink)}
+.rot-ser b{display:block;font-family:var(--f-grot);font-weight:700;font-size:30px;letter-spacing:0;text-transform:none}
+.rot-ser .mono{display:block;margin-top:6px;font-size:20px;color:var(--dim)}
+.sw{display:inline-block;width:16px;height:16px;margin-right:8px;vertical-align:-2px}
+.sw.rosa{background:var(--rosa)} .sw.ink{background:var(--ink)}
+
+/* ---------- 01 abertura ---------- */
+.titulo-abertura{left:56px;top:150px;font-size:340px;letter-spacing:-.01em;white-space:nowrap}
+.sub-abertura{left:var(--m);bottom:120px;font-size:26px;color:var(--dim)}
+
+/* ---------- 02–06 fases dos comprimidos ---------- */
+.fase .chip{left:var(--m);top:104px}
+.fase .titulo-fase{left:52px;top:160px;font-size:250px}
+.fase .subs{left:var(--m);top:420px;list-style:none}
+.fase .subs li{margin-bottom:22px}
+.fase .subs b{display:block;font-family:var(--f-grot);font-weight:700;font-size:40px}
+.fase .subs .mono{display:block;margin-top:4px;font-size:20px;color:var(--dim)}
+.fase .anchor{left:var(--m);top:760px;font-size:56px}
+.fase .contador{right:var(--m);bottom:128px;text-align:right}
+.fase .contador .mono{display:block;font-size:20px;color:var(--dim);margin-bottom:14px}
+.fase .contador .display{font-size:280px}
+
+/* ---------- 07 pergunta ---------- */
+.s7 .pergunta{left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;font-family:var(--f-grot);font-weight:700;font-size:76px;color:var(--papel)}
+
+/* ---------- 08 regras ---------- */
+.titulo-regras{left:52px;top:100px;font-size:130px}
+.titulo-regras .ln{display:inline;margin-right:.25em}
+.regras{left:var(--m);right:var(--m);top:730px;display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+.regra{position:relative;height:250px;padding:28px;border:2px solid var(--ink);opacity:0}
+.regra .num{display:block;font-size:22px;margin-bottom:20px;color:var(--dim)}
+.regra b{display:block;font-family:var(--f-grot);font-weight:700;font-size:34px;line-height:1.15}
+.regra > .mono:last-child{position:absolute;left:28px;right:28px;bottom:24px;font-size:18px;line-height:1.5;color:var(--dim)}
+.regra.atual{background:var(--ink);color:var(--bg)}
+.regra.atual .mono{color:var(--bg)!important;opacity:.75}
+.s8 .adesivo{left:110px;top:290px;width:320px}
+.s8 .foto{left:110px;top:270px;width:400px}
+
+/* ---------- adesivos e fotos (design.md §8) ---------- */
+.adesivo,.foto{opacity:0;transform:scale(1.1) rotate(-5deg);transition:none}
+.adesivo{width:300px;border:10px solid var(--papel);box-shadow:14px 14px 0 rgba(0,0,0,.85)}
+.adesivo img,.foto img{display:block;width:100%}
+.foto{width:380px;background:var(--verde);box-shadow:14px 14px 0 rgba(0,0,0,.85)}
+.foto img{filter:grayscale(1) contrast(1.25);mix-blend-mode:multiply}          /* duotone: preto + verde */
+.foto figcaption{position:absolute;left:0;bottom:-40px;font-size:18px;color:var(--ink)}
+.foto figcaption::before{content:"";display:inline-block;width:40px;height:2px;background:var(--ink);vertical-align:middle;margin-right:10px}
+
+/* ---------- 09 o ano em seringas ---------- */
+.s9 .chip{left:var(--m);top:104px}
+.s9 .s9-frase{left:var(--m);top:160px;font-size:52px}
+.s9 .sigma{right:var(--m);top:96px;text-align:right}
+.s9 .sigma .mono{display:block;font-size:20px;color:var(--dim);margin-bottom:10px}
+.s9 .sigma .display{font-size:140px}
+.s9 .fase-total{left:var(--m);bottom:128px}
+.s9 .fase-total .display{display:block;font-size:220px}
+.s9 .fase-total .mono{display:block;font-size:20px;color:var(--dim);margin-top:14px}
+.s9 .seta{left:620px;top:470px;font-size:140px;color:var(--dim)}
+.s9 .chuco{left:640px;top:300px;width:520px;background:var(--rosa);transform:rotate(-4deg)}
+.s9 .chuco img{mix-blend-mode:multiply}
+
+/* ---------- 10 total ---------- */
+.s10 .chip{left:var(--m);top:668px}
+.s10 .total{left:52px;bottom:40px}
+.s10 .total .display{display:block;font-size:330px}
+.s10 .rot-total{position:absolute;left:640px;bottom:40px;font-size:28px}
+.espectro{background:var(--spectrum);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:esp 12s linear infinite alternate}
+@keyframes esp{to{background-position:100% 0}}
+.s10 .quebra{right:var(--m);bottom:110px;text-align:right;max-width:900px}
+.s10 .quebra p{font-family:var(--f-grot);font-weight:500;font-size:40px}
+.s10 .quebra b{font-weight:700}
+.s10 .quebra .mono{margin-top:22px;font-size:20px;line-height:1.6;color:var(--dim);font-family:var(--f-mono)}
+
+/* ---------- 11 tela dividida ---------- */
+.s11 .lado{top:0;bottom:0;width:960px;display:flex;flex-direction:column;justify-content:center;padding:0 96px}
+.s11 .esq{left:0;color:var(--papel)}
+.s11 .dir{left:960px;color:var(--preto)}
+.s11 .lado > .mono{font-size:24px;opacity:.7}
+.s11 .lado .display{font-size:300px;margin:24px 0}
+.s11 .riscado{position:relative;display:inline-block;align-self:flex-start}
+.s11 .risco{position:absolute;left:-30px;right:-30px;top:50%;height:22px;background:var(--rosa);transform:rotate(-8deg) scaleX(0);transform-origin:0 50%}
+.s11 .meme-berlim{position:absolute;left:560px;top:190px;width:280px}
+.s11 .fatos{position:absolute;left:96px;bottom:120px;font-size:44px;color:var(--preto)}
+.s11 .dir .mono{color:var(--preto)}
+
+/* ---------- 12 obrigado ---------- */
+.obrigado{left:52px;top:300px;font-size:380px;white-space:nowrap}
+.s12 .eco{left:var(--m);bottom:120px;font-size:26px;color:var(--dim)}
+
+/* ---------- início ---------- */
+.start{position:absolute;left:var(--m);bottom:110px;z-index:10;cursor:pointer;
+  font-size:30px;padding:28px 48px;background:var(--verde);color:var(--preto);border:0}
+.start.gone{display:none}
+
+/* ---------- tela de senha ---------- */
+.portao{position:absolute;inset:0;z-index:30;background:var(--papel);color:var(--preto);cursor:text;
+  background-image:repeating-radial-gradient(circle at 78% 50%, transparent 0 58px, rgba(11,11,12,.05) 58px 62px)}
+.portao .xreg::before,.portao .xreg::after{background:var(--preto)}
+.portao .p-topo{position:absolute;left:var(--m);top:56px;font-size:20px}
+.portao .p-titulo{position:absolute;left:52px;top:150px;font-size:300px;white-space:nowrap}
+.portao .p-direita{position:absolute;left:var(--m);bottom:120px}
+.portao .p-rot{display:block;font-size:20px;margin-bottom:18px;color:#5f5f5b}
+.portao .pin{display:flex;gap:18px}
+.portao .casa{width:110px;height:140px;border:3px solid var(--preto);display:flex;align-items:center;justify-content:center;
+  font-family:var(--f-display);font-weight:900;font-size:110px;line-height:1;transition:background .25s,color .25s,border-color .25s}
+.portao .casa.atual{box-shadow:inset 0 -12px 0 var(--verde)}
+.portao .casa.cheia{background:var(--preto);color:var(--papel)}
+.portao .dica{display:block;margin-top:22px;font-size:20px;color:#5f5f5b}
+.portao.erro .casa{border-color:var(--rosa)}
+.portao.erro .casa.cheia{background:var(--rosa)}
+.portao.erro .dica{color:var(--rosa)}
+.portao.certo .casa{background:var(--verde);color:var(--preto);border-color:var(--preto)}
+.portao.certo .dica{color:var(--preto)}
+.portao input{position:absolute;opacity:0;pointer-events:none;left:0;top:0;width:1px;height:1px}
