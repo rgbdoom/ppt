@@ -1,171 +1,183 @@
 /* ============================================================
    TEXTOS 3D CROMADOS
-   Cada texto vira geometria extrudada com material cromado (metalness:1),
-   o mesmo envMap das seringas. Rotação sutil modulada por áudio.
+   Os títulos marcados com data-cromo viram texto extrudado em cromo,
+   na MESMA fonte (Big Shoulders Black), posição e tamanho do HTML:
+   cada linha é medida no próprio layout (sem chute de coordenadas).
+   A face da frente fica no plano z = 0 (coincide com o HTML);
+   a extrusão vai para trás, e a perspectiva mostra as laterais.
+   Se a fonte não carregar, nada muda: o HTML continua visível.
    ============================================================ */
 import * as THREE from 'three';
 import { FontLoader } from 'three/addons/loaders/FontLoader.js';
 import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 
 const gsap = window.gsap;
+const FONTE = './lib/three/examples/fonts/big_shoulders_black.typeface.json';
 
-/* definição dos textos: slide, texto, posição no palco (px), tamanho, profundidade */
-const DEFS = [
-  { s: 1,  t: '2026',        x: 56,  y: 150, sz: 340, dp: 18 },
-  { s: 1,  t: 'EM DOSES',    x: 56,  y: 490, sz: 340, dp: 18 },
-  { s: 2,  t: 'JAN',         x: 52,  y: 160, sz: 250, dp: 14 },
-  { s: 3,  t: 'FEV\u2013ABR',x: 52,  y: 160, sz: 250, dp: 14 },
-  { s: 4,  t: 'MAI\u2013JUN',x: 52,  y: 160, sz: 250, dp: 14 },
-  { s: 5,  t: 'JUL\u2013OUT',x: 52,  y: 160, sz: 250, dp: 14 },
-  { s: 6,  t: 'NOV\u2013DEZ',x: 52,  y: 160, sz: 250, dp: 14 },
-  { s: 8,  t: 'AS REGRAS',   x: 52,  y: 100, sz: 130, dp: 8 },
-  { s: 8,  t: 'DO JOGO',     x: 52,  y: 230, sz: 130, dp: 8 },
-  { s: 10, t: '794',         x: 52,  y: 40,  sz: 330, dp: 18 },
-  { s: 11, t: '794',         x: 96,  y: 250, sz: 300, dp: 16 },
-  { s: 11, t: '1.009',       x: 1056,y: 250, sz: 300, dp: 16 },
-  { s: 12, t: 'PROXIMOS',    x: 52,  y: 120, sz: 200, dp: 12 },
-  { s: 12, t: 'PASSOS',      x: 52,  y: 320, sz: 200, dp: 12 },
-  { s: 12, t: 'Usar mais po',x: 52,  y: 540, sz: 140, dp: 8 },
-  { s: 13, t: 'OBRIGADO',    x: 52,  y: 300, sz: 380, dp: 20 },
-];
+/* posição de um elemento no palco 1920×1080, ignorando transforms (animações de entrada) */
+function noPalco(el, stage) {
+  let x = 0, y = 0;
+  for (let e = el; e && e !== stage; e = e.offsetParent) { x += e.offsetLeft; y += e.offsetTop; }
+  return { x, y };
+}
 
-export function createTextos3d(scene, envMap, pxX, pxY, state) {
+/* mede uma linha de texto: início, fim e linha de base, com sondas de largura zero */
+function mede(el, stage) {
+  const sonda = () => {
+    const i = document.createElement('i');
+    i.style.cssText = 'display:inline-block;width:0;height:0;vertical-align:baseline;padding:0;margin:0';
+    return i;
+  };
+  const a = sonda(), b = sonda();
+  el.prepend(a); el.append(b);
+  const pa = noPalco(a, stage), pb = noPalco(b, stage);
+  a.remove(); b.remove();
+  return { x0: pa.x, x1: pb.x, base: pa.y, fs: parseFloat(getComputedStyle(el).fontSize) };
+}
+
+/* ambiente de reflexo do cromo: horizonte e faixas de luz finas.
+   É ele que dá o look de cromo polido (faixas claras e escuras correndo nas letras). */
+function ambienteCromo(renderer) {
+  const geo = new THREE.SphereGeometry(50, 64, 256);
+  const pos = geo.attributes.position, cor = [];
+  const brilho = e => {                       // e = elevação em graus
+    if (e > 8) return 0.75 + 0.25 * Math.min(1, (e - 8) / 40);   // céu claro
+    if (e > 3) return 0.05;                                      // faixa escura
+    if (e > 1.5) return 1.0;                                     // filete de luz
+    if (e > -10) return 0.12 + 0.28 * (e + 10) / 11.5;           // degradê médio
+    if (e > -12) return 0.8;                                     // segundo filete
+    return 0.03 + 0.15 * Math.min(1, (-e - 12) / 60);            // chão escuro
+  };
+  for (let i = 0; i < pos.count; i++) {
+    const y = pos.getY(i) / 50;
+    const b = brilho(Math.asin(Math.max(-1, Math.min(1, y))) * 180 / Math.PI);
+    cor.push(b, b, b * 1.03);
+  }
+  geo.setAttribute('color', new THREE.Float32BufferAttribute(cor, 3));
+  const cena = new THREE.Scene();
+  cena.add(new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide })));
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  const tex = pmrem.fromScene(cena, 0).texture;
+  pmrem.dispose(); geo.dispose();
+  return tex;
+}
+
+export function createTextos3d(scene, renderer, pxX, pxY, U) {
+  const envMap = ambienteCromo(renderer);
+  const stage = document.getElementById('stage');
   const grupo = new THREE.Group();
-  grupo.renderOrder = 1;
   scene.add(grupo);
 
-  const cromo = new THREE.MeshStandardMaterial({
-    color: 0xffffff, metalness: 1, roughness: 0.14,
-    envMap, envMapIntensity: 1.25,
-  });
-  const frente = new THREE.MeshStandardMaterial({
-    color: 0xffffff, metalness: 1, roughness: 0.08,
-    envMap, envMapIntensity: 1.4,
-    transparent: true, opacity: 0.32, depthWrite: false,
-  });
-  // material escuro para as laterais da extrusão (simula sombra do cromado)
-  const lateral = new THREE.MeshStandardMaterial({
-    color: 0x333333, metalness: 0.9, roughness: 0.3,
-    envMap, envMapIntensity: 0.5,
-  });
+  /* frente: cromo espelhado · laterais: cromo um pouco mais fosco e escuro, pra ler a extrusão */
+  const frente = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 1, roughness: 0.04, envMap, envMapIntensity: 1.6 });
+  const lado = new THREE.MeshStandardMaterial({ color: 0xbdbdbd, metalness: 1, roughness: 0.18, envMap, envMapIntensity: 1.2 });
 
-  let font = null, pronto = false;
-  const objs = [];  // { mesh, slide, alpha: {v:0}, grupo }
+  let font = null, nAtual = 0, tema = 'E', t = 0;
+  const porSlide = new Map();   // n -> [{ g, alpha }]
 
-  const loader = new FontLoader();
-  loader.load('./lib/three/examples/fonts/helvetiker_bold.typeface.json',
-    f => {
-      font = f;
-      DEFS.forEach((d, i) => {
-        const geo = new TextGeometry(d.t, {
-          font,
-          size: d.sz * 0.022,
-          depth: d.dp * 0.022,
-          curveSegments: 16,
-          bevelEnabled: true,
-          bevelThickness: 0.06,
-          bevelSize: 0.04,
+  function constroi(n) {
+    if (porSlide.has(n)) return porSlide.get(n);
+    const sec = document.querySelector(`.slide[data-n="${n}"]`);
+    const lista = [];
+    if (sec) {
+      sec.querySelectorAll('[data-cromo]').forEach(el => {
+        const linhas = el.querySelectorAll('.ln');
+        (linhas.length ? [...linhas] : [el]).forEach(ln => {
+          const txt = ln.textContent.trim().toUpperCase();
+          if (!txt) return;
+          const m = mede(ln, stage);
+          const tam = m.fs * U, prof = tam * 0.16, bisel = tam * 0.018;
+          const geo = new TextGeometry(txt, {
+            font, size: tam, depth: prof, curveSegments: 12,
+            bevelEnabled: true, bevelThickness: bisel, bevelSize: bisel * 0.7, bevelSegments: 5,
+          });
+          // largura de avanço da fonte vs. largura medida no HTML (inclui letter-spacing): corrige em x
+          const res = font.data.resolution;
+          const avanco = [...txt].reduce((s, c) => s + ((font.data.glyphs[c] || {}).ha || 0), 0) * tam / res;
+          const largura = (m.x1 - m.x0) * U;
+          const sx = avanco > 0 ? largura / avanco : 1;
+          // pivô no centro da linha (pra girar sem sair do lugar); frente em z = 0
+          const alturaCaixa = tam * 0.72;
+          geo.translate(-avanco / 2, -alturaCaixa / 2, -(prof + bisel));
+          const mesh = new THREE.Mesh(geo, [frente, lado]);
+          mesh.scale.x = sx;
+          const g = new THREE.Group();
+          g.add(mesh);
+          g.position.set(pxX(m.x0) + largura / 2, pxY(m.base) + alturaCaixa / 2, 0);
+          g.visible = false;
+          grupo.add(g);
+          lista.push({ g, mesh, alpha: { v: 0 }, i: lista.length });
         });
-        geo.computeBoundingBox();
-
-        // centraliza a geometria
-        const bb = geo.boundingBox;
-        const cx = (bb.max.x + bb.min.x) / 2;
-        const cy = (bb.max.y + bb.min.y) / 2;
-        geo.translate(-cx, -cy, 0);
-
-        // materiais: frente brilhante, laterais escuras
-        const mats = [frente, lateral];
-
-        const mesh = new THREE.Mesh(geo, mats);
-        mesh.position.set(pxX(d.x), pxY(d.y), 0.05);
-        mesh.castShadow = false;
-        mesh.receiveShadow = false;
-
-        const g = new THREE.Group();
-        g.add(mesh);
-        g.visible = false;
-        grupo.add(g);
-
-        objs.push({ mesh: g, def: d, alpha: { v: 0 }, i, slideAtual: -1 });
       });
-      pronto = true;
-      console.info('[2026] textos 3D prontos:', objs.length);
-    },
-    undefined,
-    () => console.warn('[2026] fonte 3D não carregou')
-  );
+    }
+    porSlide.set(n, lista);
+    return lista;
+  }
 
-  let nAtual = 0, tAcum = 0;
+  function mostra(n, instantaneo) {
+    for (const [k, lista] of porSlide) {
+      if (k === n) continue;
+      lista.forEach(o => {
+        gsap.killTweensOf(o.alpha);
+        gsap.to(o.alpha, { v: 0, duration: instantaneo ? 0 : 0.45, ease: 'power2.in' });
+      });
+    }
+    constroi(n).forEach((o, i) => {
+      gsap.killTweensOf(o.alpha);
+      if (instantaneo) { o.alpha.v = 1; return; }
+      gsap.fromTo(o.alpha, { v: 0 }, { v: 1, duration: 1.3, ease: 'expo.out', delay: 0.15 + i * 0.12 });
+    });
+  }
+
+  new FontLoader().load(FONTE, f => {
+    font = f;
+    // só esconde o HTML quando o 3D está pronto (fontes do CSS também, pra medir certo)
+    document.fonts.ready.then(() => {
+      stage.classList.add('cromo-3d');
+      mostra(nAtual, true);
+      console.info('[2026] textos 3D cromados prontos');
+    });
+  }, undefined, () => console.warn('[2026] fonte 3D não carregou: títulos ficam em HTML'));
 
   function setSlide(n, instantaneo) {
-    if (!pronto) { nAtual = n; return; }
-    const calmo = instantaneo;
     nAtual = n;
-
-    objs.forEach(o => {
-      const ativo = o.def.s === n;
-      if (ativo && o.slideAtual !== n) {
-        // entra
-        o.slideAtual = n;
-        o.mesh.visible = true;
-        gsap.killTweensOf(o.alpha);
-        gsap.to(o.alpha, {
-          v: 1, duration: calmo ? 0.35 : 1.1, ease: 'expo.out',
-          delay: calmo ? 0 : 0.2,
-        });
-      } else if (!ativo && o.slideAtual === n) {
-        // sai
-        o.slideAtual = -1;
-        gsap.killTweensOf(o.alpha);
-        gsap.to(o.alpha, {
-          v: 0, duration: calmo ? 0.2 : 0.5, ease: 'power2.in',
-          onComplete: () => { if (o.alpha.v < 0.01) o.mesh.visible = false; },
-        });
-      }
-    });
+    if (font && stage.classList.contains('cromo-3d')) mostra(n, instantaneo);
   }
 
-  function render(a, t, calmo) {
-    if (!pronto) return;
-    tAcum += 0.016;
-    const rotBase = calmo ? 0 : Math.sin(tAcum * 0.3) * 0.06 + a.bass * 0.04;
-
-    objs.forEach(o => {
-      const al = o.alpha.v;
-      if (al < 0.005) { o.mesh.visible = false; return; }
-      o.mesh.visible = true;
-
-      // escala com alpha + pulso de kick
-      const s = al * (1 + (calmo ? 0 : a.kick * 0.04));
-      o.mesh.scale.setScalar(Math.max(0.001, s));
-
-      // rotação sutil
-      o.mesh.children[0].rotation.y = rotBase * (0.7 + o.i * 0.15);
-      o.mesh.children[0].rotation.x = Math.sin(tAcum * 0.25 + o.i * 0.6) * 0.03 * (calmo ? 0.3 : 1);
-    });
-  }
-
-  function setTema(tema) {
-    // ajusta o brilho do cromo conforme o fundo
+  function setTema(novo, instantaneo) {
+    tema = novo;
+    // fundo claro: cromo puro estoura e some; escurece pra um aço polido
     const claro = tema === 'C' || tema === 'F';
-    const metalHex = claro ? 0x6e6e6e : 0xffffff;
-    const alvo = new THREE.Color(metalHex);
-    gsap.to(cromo.color, { r: alvo.r, g: alvo.g, b: alvo.b, duration: 1.1, ease: 'power2.inOut' });
-    gsap.to(frente.color, { r: alvo.r, g: alvo.g, b: alvo.b, duration: 1.1, ease: 'power2.inOut' });
+    const d = instantaneo ? 0 : 1.1;
+    const c1 = new THREE.Color(claro ? 0x5a5a5c : 0xffffff), c2 = new THREE.Color(claro ? 0x2a2a2c : 0xbdbdbd);
+    gsap.to(frente.color, { r: c1.r, g: c1.g, b: c1.b, duration: d, ease: 'power2.inOut' });
+    gsap.to(lado.color, { r: c2.r, g: c2.g, b: c2.b, duration: d, ease: 'power2.inOut' });
+  }
+
+  function render(a, dt, calmo) {
+    t += dt;
+    for (const lista of porSlide.values()) {
+      for (const o of lista) {
+        const al = o.alpha.v;
+        o.g.visible = al > 0.003;
+        if (!o.g.visible) continue;
+        // entrada: sobe de trás e gira até assentar; depois, um balanço lento que faz o reflexo correr
+        const balanco = calmo ? 0 : Math.sin(t * 0.45 + o.i * 0.9) * 0.07 + a.bass * 0.05;
+        o.mesh.rotation.y = (1 - al) * 0.9 + balanco;
+        o.mesh.rotation.x = (1 - al) * -0.5 + (calmo ? 0 : Math.sin(t * 0.33 + o.i) * 0.035);
+        o.g.position.z = (1 - al) * -6;
+        o.g.scale.setScalar(Math.max(1e-3, (0.85 + 0.15 * al) * (1 + (calmo ? 0 : a.kick * 0.015))));
+      }
+    }
   }
 
   function dispose() {
-    objs.forEach(o => {
-      o.mesh.children.forEach(c => {
-        if (c.geometry) c.geometry.dispose();
-      });
-    });
-    grupo.clear();
-    cromo.dispose();
-    frente.dispose();
-    lateral.dispose();
+    for (const lista of porSlide.values()) lista.forEach(o => o.mesh.geometry.dispose());
+    porSlide.clear();
+    grupo.clear(); scene.remove(grupo);
+    frente.dispose(); lado.dispose(); envMap.dispose();
+    stage.classList.remove('cromo-3d');
   }
 
-  return { setSlide, render, setTema, dispose };
+  return { setSlide, setTema, render, dispose };
 }

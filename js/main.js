@@ -32,7 +32,7 @@ FASES.forEach((f, i) => {
   const sec = $(`.slide[data-n="${i + 2}"]`);
   sec.innerHTML = `
     <div class="chip mono" data-in>FASE ${f.n} / 5</div>
-    <h2 class="display titulo-fase" data-split><span class="ln">${f.titulo}</span></h2>
+    <h2 class="display titulo-fase" data-split data-cromo><span class="ln">${f.titulo}</span></h2>
     <ul class="subs">${f.comp.map(c => `
       <li data-in><b>${SUBS[c.sub].titulo} ${c.diaria}/dia</b>
       <span class="mono">${c.qtd} ${plural(c.qtd, 'COMPRIMIDO', 'COMPRIMIDOS')} DE ${c.unid.toUpperCase()}</span></li>`).join('')}
