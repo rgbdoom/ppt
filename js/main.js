@@ -77,7 +77,7 @@ async function usa3D() {
 await usa3D();
 
 /* ---------- centro dos círculos do fundo, por slide ---------- */
-const CENTROS = { 1: [1500, 600], 7: [960, 540], 8: [1350, 480], 9: [1250, 600], 10: [960, 370], 11: [960, 540], 12: [1500, 600] };
+const CENTROS = { 1: [1500, 600], 7: [960, 540], 8: [1350, 480], 9: [1250, 600], 10: [960, 370], 11: [960, 540], 12: [960, 540], 13: [1500, 600] };
 const zonasDe = n => ({ centro: CENTROS[n] || (n >= 2 && n <= 6 ? [1380, 470] : [960, 540]) });
 
 /* ---------- rótulos dos objetos (diff por chave, entram e saem suavemente) ---------- */
@@ -140,7 +140,7 @@ function vai(novoN, novoPasso = 0, opc = {}) {
     entra(novo, corte);
     stage.dataset.tema = cfg.tema;
     $('#num-slide').textContent = `SLIDE ${pad(novoN)} / ${pad(SLIDES.length)}`;
-    cfgAtual = { tema: cfg.tema, fundo: cfg.fundo, ...zonasDe(novoN) };
+    cfgAtual = { n: novoN, tema: cfg.tema, fundo: cfg.fundo, ...zonasDe(novoN) };
     ativo && ativo.setSlide(cfgAtual, corte);
   }
   n = novoN; passo = novoPasso;
@@ -291,7 +291,7 @@ requestAnimationFrame(loop);
 
 /* antes do clique: mostra o slide 1 parado, por trás do botão */
 $('.slide[data-n="1"]').classList.add('ativo');
-cfgAtual = { tema: 'E', fundo: SLIDES[0].fundo, ...zonasDe(1) };
+cfgAtual = { n: 1, tema: 'E', fundo: SLIDES[0].fundo, ...zonasDe(1) };
 ativo && ativo.setSlide(cfgAtual, true);
 
 /* atalho de teste: ?s=9&p=2 abre direto num slide/passo */

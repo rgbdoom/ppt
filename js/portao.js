@@ -4,7 +4,7 @@
    (inclusive o conteúdo) continuam legíveis para quem abrir o repositório.
    A senha não fica escrita aqui: o código guarda só o hash SHA-256 dela.
    ============================================================ */
-const HASH = '08dd19ebe332aeb67bca30589e54e627232949c7373d3e353f94c21f69a9d9c5';
+const HASH = '45553cb1d7ff20a12ab1cb54e5f5f4d625f27ec5f13be96ebf4912745d217258';
 const N = 4;
 
 async function sha256(txt) {

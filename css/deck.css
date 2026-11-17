@@ -31,6 +31,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000}
 /* ---------- slides ---------- */
 .slide{position:absolute;inset:0;visibility:hidden;pointer-events:none}
 .slide.ativo{visibility:visible}
+/* slides com texto 3D cromado: esconde o HTML equivalente */
+.slide[data-3d].ativo .display{opacity:0;pointer-events:none}
 .slide > *{position:absolute}
 .ln{display:block}
 #reserva[hidden],#gl[hidden]{display:none!important}
@@ -142,9 +144,14 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000}
 .s11 .fatos{position:absolute;left:96px;bottom:120px;font-size:44px;color:var(--preto)}
 .s11 .dir .mono{color:var(--preto)}
 
-/* ---------- 12 obrigado ---------- */
+/* ---------- 12 próximos passos ---------- */
+.s12 .titulo-prox{left:52px;top:100px;font-size:230px}
+.s12 .prox-po{left:52px;top:440px;font-size:150px}
+.s12 .prox-leg{position:absolute;left:var(--m);bottom:120px;font-size:13px;color:var(--dim);max-width:700px;line-height:1.5}
+
+/* ---------- 13 obrigado ---------- */
 .obrigado{left:52px;top:300px;font-size:380px;white-space:nowrap}
-.s12 .eco{left:var(--m);bottom:120px;font-size:26px;color:var(--dim)}
+.s13 .eco{left:var(--m);bottom:120px;font-size:26px;color:var(--dim)}
 
 /* ---------- início ---------- */
 .start{position:absolute;left:var(--m);bottom:110px;z-index:10;cursor:pointer;

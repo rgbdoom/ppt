@@ -15,6 +15,7 @@ import { FilmPass } from 'three/addons/postprocessing/FilmPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { RGBShiftShader } from 'three/addons/shaders/RGBShiftShader.js';
 import { SPEC, BICO, ordemSeringas } from './dados.js';
+import { createTextos3d } from './textos3d.js';
 
 const gsap = window.gsap;
 const HEX = { preto: 0x0b0b0c, papel: 0xf1eee6, concreto: 0x8a8a86, verde: 0xc6ff00, rosa: 0xff2d8a };
@@ -43,6 +44,9 @@ export function createCena(container, state) {
 
   const pmrem = new THREE.PMREMGenerator(renderer);
   const env = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+  /* ---------- textos 3D cromados ---------- */
+  const textos = createTextos3d(scene, env, pxX, pxY, state);
 
   /* ---------- materiais compartilhados ---------- */
   const cromo = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 1, roughness: 0.14, envMap: env, envMapIntensity: 1.25 });
@@ -300,13 +304,16 @@ export function createCena(container, state) {
     fase += dt * (0.25 + (calmo ? 0 : a.kick * 2.2));
     U_.uFase.value = fase;
 
+    textos.render(a, t, calmo);
+
     rgb.uniforms.amount.value = calmo ? 0 : Math.min(0.003, a.high * 0.0012 + a.kick * 0.0016);
     grao.uniforms.intensity.value = 0.28 + (calmo ? 0 : a.high * 0.2);
     composer.render(dt);
   }
 
   /* troca de tema e de fundo entre slides: tudo interpolado, sem corte */
-  function setSlide({ tema, fundo: f = {}, centro }, instantaneo = false) {
+  function setSlide({ n, tema, fundo: f = {}, centro }, instantaneo = false) {
+    textos.setSlide(n, instantaneo);
     const T = TEMAS[tema] || TEMAS.E, d = instantaneo ? 0 : 1.1, ease = 'power2.inOut';
     const alvo = (c, h) => { const n = new THREE.Color(h); gsap.to(c, { r: n.r, g: n.g, b: n.b, duration: d, ease }); };
     alvo(U_.uBg.value, T.bg); alvo(U_.uInk.value, T.ink);
@@ -319,7 +326,8 @@ export function createCena(container, state) {
     gsap.to(U_.uSplit, { value: f.split || 0, duration: d, ease });
     gsap.to(U_.uOndas, { value: f.ondas || 0, duration: d, ease });
     if (centro) gsap.to(U_.uC.value, { x: centro[0] / 1920, y: 1 - centro[1] / 1080, duration: d, ease });
+    textos.setTema(tema);
   }
 
-  return { render, setSlide, dispose() { renderer.dispose(); renderer.domElement.remove(); } };
+  return { render, setSlide, dispose() { textos.dispose(); renderer.dispose(); renderer.domElement.remove(); } };
 }
