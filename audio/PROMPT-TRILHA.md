@@ -2,6 +2,8 @@
 
 Para gerar a trilha nova (Suno, Udio ou similar). O resultado vai em `audio/trilha.mp3`, no lugar da atual.
 
+Trilha em uso: "Squelching Acid" (dayubneto), ~136,5 BPM, 3min35s.
+
 ## Estilo (cole no campo de estilo)
 
 ```
