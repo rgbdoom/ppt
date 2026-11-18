@@ -4,7 +4,7 @@
    ESPAÇO música · F tela cheia · M modo calmo · R modo reserva (sem 3D)
    ?teste na URL desliga a queda automática para a reserva
    ============================================================ */
-import { createAudio } from './audio.js';
+import { createAudio, BEAT } from './audio.js';
 import { createReserva } from './reserva.js';
 import { criaItens } from './itens.js';
 import { SLIDES, layout } from './layouts.js';
@@ -38,7 +38,7 @@ FASES.forEach((f, i) => {
       <span class="mono">${c.qtd} ${plural(c.qtd, 'COMPRIMIDO', 'COMPRIMIDOS')} DE ${c.unid.toUpperCase()}</span></li>`).join('')}
     </ul>
     <p class="anchor" data-in>${f.compDia} ${plural(f.compDia, 'comprimido', 'comprimidos')} por dia</p>
-    <div class="contador" data-in><span class="mono">COMPRIMIDOS ${f.periodo}</span><span class="display respira">${f.compTotal}</span></div>`;
+    <div class="contador" data-in><span class="mono">COMPRIMIDOS ${f.periodo}</span><span class="display respira" data-cromo>${f.compTotal}</span></div>`;
 });
 
 /* régua das fases: largura proporcional aos dias, igual nos slides 2–6 e 9 */
@@ -263,14 +263,21 @@ addEventListener('keydown', e => {
 /* ---------- loop ---------- */
 const SEM_QUEDA = new URLSearchParams(location.search).has('teste');
 let last = performance.now(), fpsAcc = 0, fpsN = 0, lentoDesde = 0;
+/* ?simula na URL: batida falsa a 135 BPM, pra ver as reações visuais sem som */
+const SIMULA = new URLSearchParams(location.search).has('simula');
+function simula(t) {
+  const fb = (t / BEAT) % 1, k = Math.exp(-fb * 9);
+  return { bass: 0.35 + 0.55 * k, mid: 0.4 + 0.3 * Math.sin(t * 3) ** 2, high: 0.3 + 0.3 * Math.sin(t * 7) ** 2, level: 0.5, kick: k };
+}
 
 function loop(now) {
   const dt = Math.min(0.1, (now - last) / 1000); last = now;
-  const a = audio.update(now / 1000);
+  const a = SIMULA ? simula(now / 1000) : audio.update(now / 1000);
 
   // números grandes "respiram" no peso da fonte variável com o grave (nunca no slide 7 e 11)
   const w = state.calm || n === 7 || n === 11 ? 900 : Math.round(620 + a.bass * 280);
-  $$('.slide.ativo .respira, .slide.ativo .titulo-abertura, .slide.ativo .obrigado').forEach(el => {
+  // (os que viraram cromo 3D ficam de fora: o peso mudando mexeria na medida do texto)
+  $$('.slide.ativo :is(.respira, .titulo-abertura, .obrigado):not([data-cromo])').forEach(el => {
     el.style.fontVariationSettings = `"opsz" 72, "wght" ${w}`;
   });
 

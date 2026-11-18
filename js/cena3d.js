@@ -13,9 +13,10 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { FilmPass } from 'three/addons/postprocessing/FilmPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-import { RGBShiftShader } from 'three/addons/shaders/RGBShiftShader.js';
 import { SPEC, BICO, ordemSeringas } from './dados.js';
+import { BAR } from './audio.js';
 import { createTextos3d } from './textos3d.js';
+import { ambienteHolo, materialHolo } from './holo.js';
 
 const gsap = window.gsap;
 const HEX = { preto: 0x0b0b0c, papel: 0xf1eee6, concreto: 0x8a8a86, verde: 0xc6ff00, rosa: 0xff2d8a };
@@ -45,8 +46,12 @@ export function createCena(container, state) {
   const pmrem = new THREE.PMREMGenerator(renderer);
   const env = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
 
-  /* ---------- títulos em cromo extrudado (js/textos3d.js) ---------- */
-  const textos = createTextos3d(scene, renderer, pxX, pxY, U);
+  /* ---------- cromo holográfico: textos grandes (js/textos3d.js) e comprimidos ---------- */
+  const holoEnv = { claro: ambienteHolo(renderer, 'claro'), escuro: ambienteHolo(renderer, 'escuro') };
+  const textos = createTextos3d(scene, holoEnv, pxX, pxY, U);
+  // comprimidos: holográfico claro no fundo escuro, holográfico negro no fundo claro
+  const holoPil = { claro: materialHolo(holoEnv.claro), escuro: materialHolo(holoEnv.escuro) };
+  let pilMat = holoPil.claro;
 
   /* ---------- materiais compartilhados ---------- */
   const cromo = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 1, roughness: 0.14, envMap: env, envMapIntensity: 1.25 });
@@ -130,7 +135,7 @@ export function createCena(container, state) {
         embolo.position.y = base + h;
         // troca de agulha: 40x12 puxa da ampola, 25x7 aplica (ciclo de 4 compassos)
         if (st.ag === 'troca') {
-          const P = 7.385, c = (t % P) / P;
+          const P = BAR * 4, c = (t % P) / P;
           const sai = THREE.MathUtils.smoothstep(c, 0.42, 0.52), entra = THREE.MathUtils.smoothstep(c, 0.5, 0.6);
           const volta = THREE.MathUtils.smoothstep(c, 0.92, 1.0);
           const k40 = 1 - sai + volta, k25 = entra * (1 - volta);
@@ -159,11 +164,12 @@ export function createCena(container, state) {
   const pilCache = {};
   function criaPilula(forma) {
     const geo = pilCache[forma] || (pilCache[forma] = PILGEO[forma]());
-    const outer = new THREE.Group(), m = new THREE.Mesh(geo, cromo);
+    const outer = new THREE.Group(), m = new THREE.Mesh(geo, pilMat);
     outer.add(m);
     return {
       outer,
       update(st, t, a, calmo, i) {
+        m.material = pilMat;   // acompanha o fundo (claro/escuro) mesmo se o comprimido continua no próximo slide
         m.rotation.y = t * 0.6 + i * 0.9 + (calmo ? 0 : a.bass * 0.5);
         m.rotation.x = Math.sin(t * 0.4 + i) * 0.25;
       },
@@ -233,16 +239,20 @@ export function createCena(container, state) {
 
         // círculos concêntricos "cromados": cada anel é um tubo de metal,
         // com brilho que gira em volta (reflexo) e anda para fora a cada kick
-        vec2 q = (uv - uC) * vec2(16.0 / 9.0, 1.0);
+        // "soco" de zoom a cada kick: a tela inteira pulsa a partir do centro
+        vec2 q = (uv - uC) * vec2(16.0 / 9.0, 1.0) * (1.0 - uKick * 0.06 * vivo);
         float r = length(q), ang = atan(q.y, q.x);
         float x = r * 7.0 - uFase, f = fract(x), d = min(f, 1.0 - f);
-        float w = 0.085 + uBass * 0.03 * vivo;
+        float w = 0.085 + uBass * 0.09 * vivo;
         float tubo = clamp(1.0 - d / w, 0.0, 1.0);
         float aa = clamp(fwidth(x) * 1.5 / w, 0.0, 1.0);
         tubo = smoothstep(0.0, max(aa, 0.08), tubo) * sqrt(tubo);
         float brilho = 0.25 + 0.75 * pow(abs(sin(ang * 1.5 + uT * 0.35 + floor(x) * 0.9)), 6.0);
         float queda = exp(-r * 1.15);
-        float anel = tubo * brilho * queda * (0.85 + uKick * 0.5 * vivo);
+        float anel = tubo * brilho * queda * (0.85 + uKick * 1.2 * vivo);
+        // onda de choque: um anel claro que sai do centro a cada batida e se apaga
+        float rs = (1.0 - uKick) * 1.6;
+        float choque = exp(-pow((r - rs) / 0.035, 2.0)) * uKick * vivo;
 
         // ondas paralelas (op-art), só onde o slide pede (slide 8)
         float amp = 0.22 + uBass * 1.1 * vivo;
@@ -251,8 +261,8 @@ export function createCena(container, state) {
         float ondas = (1.0 - smoothstep(0.06, 0.06 + fwidth(yy) * 1.5, fy)) * uOndas;
 
         vec3 tinta = mix(uInk, espectro(uv.x + sin(uT * 0.2) * 0.15), uSpec);
-        float forca = 0.2 * (1.0 - uQuieto * 0.85);
-        vec3 col = mix(bg, tinta, clamp(anel * forca + ondas * 0.22, 0.0, 1.0));
+        float forca = (0.2 + (uBass * 0.3 + uKick * 0.25) * vivo) * (1.0 - uQuieto * 0.85);
+        vec3 col = mix(bg, tinta, clamp(anel * forca + choque * 0.55 + ondas * 0.22, 0.0, 1.0));
         gl_FragColor = vec4(col, 1.0);
       }`,
   }));
@@ -264,7 +274,20 @@ export function createCena(container, state) {
   composer.setPixelRatio(renderer.getPixelRatio());
   composer.setSize(1920, 1080);
   composer.addPass(new RenderPass(scene, camera));
-  const rgb = new ShaderPass(RGBShiftShader); rgb.uniforms.amount.value = 0;
+  /* aberração cromática radial: vermelho para fora, azul para dentro, mais forte nas bordas.
+     Pega tudo o que é 3D (fundo, comprimidos, seringas, letras em cromo); o texto em HTML fica nítido. */
+  const rgb = new ShaderPass({
+    uniforms: { tDiffuse: { value: null }, amount: { value: 0 } },
+    vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+    fragmentShader: `
+      uniform sampler2D tDiffuse; uniform float amount; varying vec2 vUv;
+      void main(){
+        vec2 d = vUv - 0.5;
+        vec2 k = d * amount * (0.35 + length(d) * 1.6);
+        vec4 g = texture2D(tDiffuse, vUv);
+        gl_FragColor = vec4(texture2D(tDiffuse, vUv + k).r, g.g, texture2D(tDiffuse, vUv - k).b, g.a);
+      }`,
+  });
   composer.addPass(rgb);
   const grao = new FilmPass(0.3, false);
   composer.addPass(grao);
@@ -304,7 +327,7 @@ export function createCena(container, state) {
     fase += dt * (0.25 + (calmo ? 0 : a.kick * 2.2));
     U_.uFase.value = fase;
 
-    rgb.uniforms.amount.value = calmo ? 0 : Math.min(0.003, a.high * 0.0012 + a.kick * 0.0016);
+    rgb.uniforms.amount.value = calmo ? 0 : Math.min(0.03, a.kick * 0.024 + a.bass * 0.006 + a.high * 0.004);
     grao.uniforms.intensity.value = 0.28 + (calmo ? 0 : a.high * 0.2);
     textos.render(a, dt, calmo);
     composer.render(dt);
@@ -312,7 +335,7 @@ export function createCena(container, state) {
 
   /* troca de tema e de fundo entre slides: tudo interpolado, sem corte */
   function setSlide({ n, tema, fundo: f = {}, centro }, instantaneo = false) {
-    textos.setSlide(n, instantaneo); textos.setTema(tema, instantaneo);
+    textos.setSlide(n, instantaneo, tema);
     const T = TEMAS[tema] || TEMAS.E, d = instantaneo ? 0 : 1.1, ease = 'power2.inOut';
     const alvo = (c, h) => { const n = new THREE.Color(h); gsap.to(c, { r: n.r, g: n.g, b: n.b, duration: d, ease }); };
     alvo(U_.uBg.value, T.bg); alvo(U_.uInk.value, T.ink);
@@ -320,6 +343,7 @@ export function createCena(container, state) {
     // no fundo claro o cromo puro some: vira um metal mais escuro (gunmetal)
     const metal = tema === 'C' || tema === 'F' ? 0x6e6e6e : 0xffffff;
     alvo(cromo.color, metal); alvo(vidro.color, metal);
+    pilMat = metal === 0xffffff ? holoPil.claro : holoPil.escuro;
     gsap.to(U_.uSpec, { value: f.spec || 0, duration: d * 1.5, ease });
     gsap.to(U_.uQuieto, { value: f.quieto || 0, duration: instantaneo ? 0 : 0.6, ease });
     gsap.to(U_.uSplit, { value: f.split || 0, duration: d, ease });
@@ -327,5 +351,5 @@ export function createCena(container, state) {
     if (centro) gsap.to(U_.uC.value, { x: centro[0] / 1920, y: 1 - centro[1] / 1080, duration: d, ease });
   }
 
-  return { render, setSlide, dispose() { textos.dispose(); renderer.dispose(); renderer.domElement.remove(); } };
+  return { render, setSlide, dispose() { textos.dispose(); holoPil.claro.dispose(); holoPil.escuro.dispose(); holoEnv.claro.dispose(); holoEnv.escuro.dispose(); renderer.dispose(); renderer.domElement.remove(); } };
 }

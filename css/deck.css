@@ -33,7 +33,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000}
 .slide.ativo{visibility:visible}
 .slide > *{position:absolute}
 /* títulos em cromo 3D: o HTML continua no lugar (é medido), só fica invisível */
-.cromo-3d [data-cromo]{opacity:0}
+.cromo-3d [data-cromo]{opacity:0!important}
 .ln{display:block}
 #reserva[hidden],#gl[hidden]{display:none!important}
 

@@ -8,7 +8,7 @@
 export const SUBS = {
   fluox: { nome: 'FLUOXETINA', titulo: 'Fluoxetina', forma: 'capsula' },
   vort: { nome: 'VORTIOXETINA', titulo: 'Vortioxetina', forma: 'disco' },
-  bup: { nome: 'BUPROPIONA XL', titulo: 'Bupropiona XL', forma: 'oblongo' },
+  bup: { nome: 'BUPROPIONA XL', titulo: 'Bupropiona XL', forma: 'capsula' },   // mesmo formato da fluoxetina
   nal: { nome: 'NALTREXONA', titulo: 'Naltrexona', forma: 'discoP' },
   topi: { nome: 'TOPIRAMATO', titulo: 'Topiramato', forma: 'hex' },
 };

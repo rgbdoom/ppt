@@ -4,7 +4,7 @@
    Funciona igual no modo 3D e no modo reserva.
    ============================================================ */
 
-const BPM = 130;
+const BPM = 135;   // trilha de acid techno (prompt em audio/PROMPT-TRILHA.md)
 export const BEAT = 60 / BPM;   // ≈ 0,4615 s
 export const BAR = BEAT * 4;    // ≈ 1,846 s
 
