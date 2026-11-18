@@ -225,41 +225,6 @@ const ganchos = {
   },
 };
 
-/* ---------- senha antes de tudo (bloqueio simples) ---------- */
-const sala = await portao();
-
-/* ---------- controle pelo celular (treino.html): o celular manda 'vai', a apresentação responde 'pos' ---------- */
-canal = abreCanal(sala, m => {
-  if (m.tipo !== 'vai') return;
-  if (!iniciado) { start.classList.add('gone'); iniciado = true; }   // a música ainda precisa de um toque aqui
-  vai(m.s, m.p || 0, { remoto: true });
-});
-
-/* ---------- início: o navegador só libera som depois de um gesto ---------- */
-const start = $('#start');
-async function comeca() {
-  if (!iniciado) {
-    start.classList.add('gone');
-    vai(1, 0);
-    iniciado = true;
-  }
-  await audio.toggle();
-}
-start.addEventListener('click', e => { e.stopPropagation(); comeca(); });
-stage.addEventListener('click', () => { if (iniciado) avanca(); });
-
-addEventListener('keydown', e => {
-  const k = e.key;
-  if (e.code === 'Space') { e.preventDefault(); comeca(); return; }
-  if (!iniciado) { if (k === 'ArrowRight' || k === 'Enter') comeca(); return; }
-  if (['ArrowRight', 'PageDown', 'Enter', 'ArrowDown'].includes(k)) { e.preventDefault(); avanca(); }
-  else if (['ArrowLeft', 'PageUp', 'ArrowUp'].includes(k)) { e.preventDefault(); volta(); }
-  else if (k === 'f' || k === 'F') { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); }
-  else if (k === 'm' || k === 'M') state.calm = !state.calm;
-  else if (k === 'r' || k === 'R') { cena ? usaReserva('tecla R') : usa3D(); }
-  else if (k === 'Home') vai(1, 0);
-});
-
 /* ---------- loop ---------- */
 const SEM_QUEDA = new URLSearchParams(location.search).has('teste');
 let last = performance.now(), fpsAcc = 0, fpsN = 0, lentoDesde = 0;
@@ -296,10 +261,46 @@ function loop(now) {
 }
 requestAnimationFrame(loop);
 
-/* antes do clique: mostra o slide 1 parado, por trás do botão */
+/* antes da senha e do clique: o slide 1 já aparece (e se mexe) por trás da tela de senha */
 $('.slide[data-n="1"]').classList.add('ativo');
 cfgAtual = { n: 1, tema: 'E', fundo: SLIDES[0].fundo, ...zonasDe(1) };
 ativo && ativo.setSlide(cfgAtual, true);
+
+/* ---------- senha antes de tudo (bloqueio simples) ---------- */
+const sala = await portao();
+
+/* ---------- controle pelo celular (treino.html): o celular manda 'vai', a apresentação responde 'pos' ---------- */
+canal = abreCanal(sala, m => {
+  if (m.tipo !== 'vai') return;
+  if (!iniciado) { start.classList.add('gone'); iniciado = true; }   // a música ainda precisa de um toque aqui
+  vai(m.s, m.p || 0, { remoto: true });
+});
+
+/* ---------- início: o navegador só libera som depois de um gesto ---------- */
+const start = $('#start');
+async function comeca() {
+  if (!iniciado) {
+    start.classList.add('gone');
+    vai(1, 0);
+    iniciado = true;
+  }
+  await audio.toggle();
+}
+start.addEventListener('click', e => { e.stopPropagation(); comeca(); });
+stage.addEventListener('click', () => { if (iniciado) avanca(); });
+
+addEventListener('keydown', e => {
+  const k = e.key;
+  if (e.code === 'Space') { e.preventDefault(); comeca(); return; }
+  if (!iniciado) { if (k === 'ArrowRight' || k === 'Enter') comeca(); return; }
+  if (['ArrowRight', 'PageDown', 'Enter', 'ArrowDown'].includes(k)) { e.preventDefault(); avanca(); }
+  else if (['ArrowLeft', 'PageUp', 'ArrowUp'].includes(k)) { e.preventDefault(); volta(); }
+  else if (k === 'f' || k === 'F') { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); }
+  else if (k === 'm' || k === 'M') state.calm = !state.calm;
+  else if (k === 'r' || k === 'R') { cena ? usaReserva('tecla R') : usa3D(); }
+  else if (k === 'Home') vai(1, 0);
+});
+
 
 /* atalho de teste: ?s=9&p=2 abre direto num slide/passo */
 const q = new URLSearchParams(location.search);
