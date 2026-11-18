@@ -216,7 +216,7 @@ export function createCena(container, state) {
   const cor = h => new THREE.Color(h);
   const U_ = {
     uT: { value: 0 }, uBass: { value: 0 }, uMid: { value: 0 }, uHigh: { value: 0 }, uKick: { value: 0 },
-    uFase: { value: 0 }, uCalm: { value: 0 }, uQuieto: { value: 0 }, uSpec: { value: 0 }, uSplit: { value: 0 }, uOndas: { value: 0 },
+    uFase: { value: 0 }, uCalm: { value: 0 }, uQuieto: { value: 0 }, uSpec: { value: 0 }, uSplit: { value: 0 }, uOndas: { value: 0 }, uTensao: { value: 0 }, uBatida: { value: 0 },
     uC: { value: new THREE.Vector2(0.65, 0.6) },
     uBg: { value: cor(HEX.preto) }, uInk: { value: cor(HEX.papel) }, uPapel: { value: cor(HEX.papel) },
   };
@@ -224,7 +224,7 @@ export function createCena(container, state) {
     uniforms: U_, depthWrite: false, depthTest: false,
     vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.9999, 1.0); }`,
     fragmentShader: /* glsl */`
-      uniform float uT, uBass, uMid, uHigh, uKick, uFase, uCalm, uQuieto, uSpec, uSplit, uOndas;
+      uniform float uT, uBass, uMid, uHigh, uKick, uFase, uCalm, uQuieto, uSpec, uSplit, uOndas, uTensao, uBatida;
       uniform vec2 uC; uniform vec3 uBg, uInk, uPapel;
       varying vec2 vUv;
       vec3 espectro(float x){   // laranja → rosa → ultravioleta → azul → verde (em linear)
@@ -263,6 +263,18 @@ export function createCena(container, state) {
         vec3 tinta = mix(uInk, espectro(uv.x + sin(uT * 0.2) * 0.15), uSpec);
         float forca = (0.2 + (uBass * 0.3 + uKick * 0.25) * vivo) * (1.0 - uQuieto * 0.85);
         vec3 col = mix(bg, tinta, clamp(anel * forca + choque * 0.55 + ondas * 0.22, 0.0, 1.0));
+
+        // a virada (slide 7): um brilho holográfico que respira no ritmo de um coração,
+        // girando devagar atrás das letras, e uma vinheta que fecha a tela
+        if (uTensao > 0.001) {
+          vec2 c = (uv - vec2(0.42, 0.5)) * vec2(16.0 / 9.0, 1.0);
+          float rc = length(c), ac = atan(c.y, c.x) / 6.28318 + 0.5;
+          // halo suave (gaussiano) com as cores girando sem emenda (seno, não fract)
+          float halo = exp(-rc * rc * (5.0 - uBatida * 1.5)) * (0.12 + 0.3 * uBatida);
+          vec3 holo = espectro(0.5 + 0.5 * sin(6.28318 * (ac + uT * 0.03) + rc * 3.0));
+          col = mix(col, holo, clamp(halo, 0.0, 1.0) * uTensao);
+          col *= mix(1.0, smoothstep(1.25, 0.25, rc), uTensao * 0.85);
+        }
         gl_FragColor = vec4(col, 1.0);
       }`,
   }));
@@ -322,12 +334,15 @@ export function createCena(container, state) {
     for (const [k, o] of objs) if (!estados.has(k)) { scene.remove(o.outer); objs.delete(k); }
 
     U_.uT.value = t;
+    // batimento "tum-tum" (~54 por minuto), independente da música
+    const ph = (t * 0.9) % 1, bat = Math.exp(-((ph / 0.045) ** 2)) + 0.6 * Math.exp(-(((ph - 0.2) / 0.045) ** 2));
+    U_.uBatida.value = calmo ? 0.3 : bat;
     U_.uBass.value = a.bass; U_.uMid.value = a.mid; U_.uHigh.value = a.high; U_.uKick.value = a.kick;
     U_.uCalm.value = calmo ? 1 : 0;
     fase += dt * (0.25 + (calmo ? 0 : a.kick * 2.2));
     U_.uFase.value = fase;
 
-    rgb.uniforms.amount.value = calmo ? 0 : Math.min(0.03, a.kick * 0.024 + a.bass * 0.006 + a.high * 0.004);
+    rgb.uniforms.amount.value = calmo ? 0 : Math.min(0.03, a.kick * 0.024 + a.bass * 0.006 + a.high * 0.004 + U_.uTensao.value * bat * 0.016);
     grao.uniforms.intensity.value = 0.28 + (calmo ? 0 : a.high * 0.2);
     textos.render(a, dt, calmo);
     composer.render(dt);
@@ -348,6 +363,7 @@ export function createCena(container, state) {
     gsap.to(U_.uQuieto, { value: f.quieto || 0, duration: instantaneo ? 0 : 0.6, ease });
     gsap.to(U_.uSplit, { value: f.split || 0, duration: d, ease });
     gsap.to(U_.uOndas, { value: f.ondas || 0, duration: d, ease });
+    gsap.to(U_.uTensao, { value: f.tensao || 0, duration: instantaneo ? 0 : 0.8, ease });
     if (centro) gsap.to(U_.uC.value, { x: centro[0] / 1920, y: 1 - centro[1] / 1080, duration: d, ease });
   }
 

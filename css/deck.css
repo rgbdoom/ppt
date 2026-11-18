@@ -83,7 +83,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000}
 .fase .contador .display{font-size:280px}
 
 /* ---------- 07 pergunta ---------- */
-.s7 .pergunta{left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;font-family:var(--f-grot);font-weight:700;font-size:76px;color:var(--papel)}
+.s7 .pergunta{left:52px;top:96px;font-size:228px;line-height:.86;white-space:nowrap;color:var(--papel)}
+.s7 .pergunta .l4{font-size:1.15em}
 
 /* ---------- 08 regras ---------- */
 .titulo-regras{left:52px;top:100px;font-size:130px}

@@ -105,7 +105,8 @@ export function createTextos3d(scene, envs, pxX, pxY, U) {
         const g = new THREE.Group(), letras = new THREE.Group();
         g.add(letras); g.visible = false; grupo.add(g);
         const it = { ln, g, letras, mats: MAT[claro ? 'escuro' : 'claro'], parado: el.hasAttribute('data-cromo-parado'),
-          alpha: { v: 0 }, i: lista.length, txt: null };
+          lento: el.hasAttribute('data-cromo-lento'), tensao: el.hasAttribute('data-cromo-tensao'),
+          alpha: { v: 0 }, i: lista.length, txt: null, desde: 0 };
         monta(it);
         lista.push(it);
       });
@@ -121,6 +122,9 @@ export function createTextos3d(scene, envs, pxX, pxY, U) {
     }
     constroi(n).forEach((o, i) => {
       gsap.killTweensOf(o.alpha);
+      o.desde = t;
+      // a virada (slide 7): mesmo entrando em corte seco, as linhas chegam uma a uma, devagar
+      if (o.lento) { gsap.fromTo(o.alpha, { v: 0 }, { v: 1, duration: 2.4, ease: 'expo.out', delay: 0.5 + i * 0.75 }); return; }
       if (instantaneo) { o.alpha.v = 1; return; }
       gsap.fromTo(o.alpha, { v: 0 }, { v: 1, duration: 1.3, ease: 'expo.out', delay: 0.15 + i * 0.12 });
     });
@@ -156,7 +160,17 @@ export function createTextos3d(scene, envs, pxX, pxY, U) {
         o.letras.rotation.y = (1 - al) * 0.9 + balanco;
         o.letras.rotation.x = (1 - al) * -0.5 + (quieto ? 0 : Math.sin(t * 0.33 + o.i) * 0.035);
         o.g.position.z = (1 - al) * -6;
-        o.g.scale.setScalar(Math.max(1e-3, (0.85 + 0.15 * al) * (1 + (quieto ? 0 : a.kick * 0.015))));
+        let esc = (0.85 + 0.15 * al) * (1 + (quieto ? 0 : a.kick * 0.015));
+        if (o.tensao) {
+          // tensão: o texto vem chegando devagar (~5% maior em 40 s) e treme de leve
+          const dt0 = Math.min(40, t - o.desde);
+          o.g.position.z += dt0 * 0.032;
+          if (!calmo) {
+            o.letras.rotation.z = Math.sin(t * 23 + o.i * 3) * 0.0025 + Math.sin(t * 37 + o.i) * 0.0015;
+            o.letras.rotation.y += Math.sin(t * 0.21 + o.i * 1.4) * 0.05;
+          }
+        }
+        o.g.scale.setScalar(Math.max(1e-3, esc));
       }
     }
   }
