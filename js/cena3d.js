@@ -17,6 +17,7 @@ import { SPEC, BICO, ordemSeringas } from './dados.js';
 import { BAR } from './audio.js';
 import { createTextos3d } from './textos3d.js';
 import { ambienteHolo, materialHolo } from './holo.js';
+import { createNeve } from './neve.js';
 
 const gsap = window.gsap;
 const HEX = { preto: 0x0b0b0c, papel: 0xf1eee6, concreto: 0x8a8a86, verde: 0xc6ff00, rosa: 0xff2d8a };
@@ -281,6 +282,9 @@ export function createCena(container, state) {
   fundo.frustumCulled = false; fundo.renderOrder = -1;
   scene.add(fundo);
 
+  /* ---------- neve e boneco de neve (slide 12, js/neve.js) ---------- */
+  const neve = createNeve(scene, { pxX, pxY, U, CAM_Z, renderer, env, holo: holoPil.escuro, metal: cromo });
+
   /* ---------- pós: separação RGB curta + grão ---------- */
   const composer = new EffectComposer(renderer);
   composer.setPixelRatio(renderer.getPixelRatio());
@@ -342,9 +346,10 @@ export function createCena(container, state) {
     fase += dt * (0.25 + (calmo ? 0 : a.kick * 2.2));
     U_.uFase.value = fase;
 
-    rgb.uniforms.amount.value = calmo ? 0 : Math.min(0.03, a.kick * 0.024 + a.bass * 0.006 + a.high * 0.004 + U_.uTensao.value * bat * 0.016);
+    rgb.uniforms.amount.value = calmo ? 0 : Math.min(0.03, a.kick * 0.024 + a.bass * 0.006 + a.high * 0.004 + U_.uTensao.value * bat * 0.016 + neve.choque * 0.03);
     grao.uniforms.intensity.value = 0.28 + (calmo ? 0 : a.high * 0.2);
     textos.render(a, dt, calmo);
+    neve.render(a, dt, calmo);
     composer.render(dt);
   }
 
@@ -364,8 +369,9 @@ export function createCena(container, state) {
     gsap.to(U_.uSplit, { value: f.split || 0, duration: d, ease });
     gsap.to(U_.uOndas, { value: f.ondas || 0, duration: d, ease });
     gsap.to(U_.uTensao, { value: f.tensao || 0, duration: instantaneo ? 0 : 0.8, ease });
+    neve.setAtivo(!!f.neve, instantaneo);
     if (centro) gsap.to(U_.uC.value, { x: centro[0] / 1920, y: 1 - centro[1] / 1080, duration: d, ease });
   }
 
-  return { render, setSlide, dispose() { textos.dispose(); holoPil.claro.dispose(); holoPil.escuro.dispose(); holoEnv.claro.dispose(); holoEnv.escuro.dispose(); renderer.dispose(); renderer.domElement.remove(); } };
+  return { render, setSlide, dispose() { textos.dispose(); neve.dispose(); holoPil.claro.dispose(); holoPil.escuro.dispose(); holoEnv.claro.dispose(); holoEnv.escuro.dispose(); renderer.dispose(); renderer.domElement.remove(); } };
 }

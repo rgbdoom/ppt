@@ -26,7 +26,7 @@ export const SLIDES = [
   { n: 9, tema: 'E', passos: 5 },
   { n: 10, tema: 'E', passos: 1, fundo: { spec: 1 } },
   { n: 11, tema: 'S', passos: 1, fundo: { quieto: 1, split: 1 } },
-  { n: 12, tema: 'E', passos: 1 },
+  { n: 12, tema: 'E', passos: 1, fundo: { neve: 1 } },
   { n: 13, tema: 'E', passos: 1 },
 ];
 
