@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026 em doses · v2</title>
+<!-- v2 · estética maximalista. Mesmo roteiro, mesmos dados (../js/dados.js), mesmo controle pelo celular.
+     Fontes embutidas em v2/fontes: funciona sem internet. -->
+<link rel="stylesheet" href="css/v2.css">
+<script type="importmap">
+{
+  "imports": {
+    "three": "../lib/three/build/three.module.js",
+    "three/addons/": "../lib/three/examples/jsm/"
+  }
+}
+</script>
+<script src="../lib/gsap/gsap.min.js"></script>
+</head>
+<body>
+<!--
+  Só o texto de TELA do roteiro entra aqui (o mesmo da v1). Grafismo não tem texto novo.
+  Navegação: → / PageDown / clique = avança · ← / PageUp = volta
+  ESPAÇO música · F tela cheia · M modo calmo · R liga/desliga o 3D
+-->
+<div class="viewport">
+<div class="stage" id="stage" data-tema="uva">
+
+  <div id="gl"></div>
+
+  <div id="slides">
+
+    <!-- 01 · ABERTURA -->
+    <section class="slide s1" data-n="1">
+      <h1 class="display titulo-abertura" data-cromo data-split><span class="ln">2026</span></h1>
+      <div class="faixa-em" data-in><span class="display">EM DOSES</span></div>
+      <svg class="g brilho b1" data-pop viewBox="0 0 100 100"><use href="#g-brilho"/></svg>
+      <svg class="g brilho b2" data-pop viewBox="0 0 100 100"><use href="#g-brilho"/></svg>
+      <svg class="g seta-curva" data-pop viewBox="0 0 200 120"><use href="#g-seta"/></svg>
+      <div class="g xadrez-tira" data-pop></div>
+      <div class="letreiro l-baixo" aria-hidden="true"><div class="corre"><span>2026 ✦ EM DOSES ✦ 2026 ✦ EM DOSES ✦ 2026 ✦ EM DOSES ✦ 2026 ✦ EM DOSES ✦&nbsp;</span><span>2026 ✦ EM DOSES ✦ 2026 ✦ EM DOSES ✦ 2026 ✦ EM DOSES ✦ 2026 ✦ EM DOSES ✦&nbsp;</span></div></div>
+    </section>
+
+    <!-- 02 a 06 · FASES DOS COMPRIMIDOS (montadas pelo main.js a partir de ../js/dados.js) -->
+    <section class="slide fase" data-n="2"></section>
+    <section class="slide fase" data-n="3"></section>
+    <section class="slide fase" data-n="4"></section>
+    <section class="slide fase" data-n="5"></section>
+    <section class="slide fase" data-n="6"></section>
+
+    <!-- 07 · A VIRADA (parado, sem glitch: o único slide sem grafismo) -->
+    <section class="slide s7" data-n="7">
+      <p class="pergunta">E se nunca tivessem inventado o <em>comprimido?</em></p>
+    </section>
+
+    <!-- 08 · AS REGRAS DO JOGO -->
+    <section class="slide s8" data-n="8">
+      <h2 class="display titulo-regras" data-cromo data-split><span class="ln">AS REGRAS</span><span class="ln">DO JOGO</span></h2>
+      <div class="regras">
+        <div class="regra" data-r="0"><span class="num">01</span><div><b>1 seringa por molécula</b><span class="mono">INCOMPATIBILIDADE FÍSICO-QUÍMICA</span></div></div>
+        <div class="regra" data-r="1"><span class="num">02</span><div><b>Volume maior, não mais seringas</b><span class="mono">AJUSTE DE DOSE</span></div></div>
+        <div class="regra" data-r="2"><span class="num">03</span><div><b>Zero reutilização</b><span class="mono">BIOSSEGURANÇA</span></div></div>
+        <div class="regra" data-r="3"><span class="num">04</span><div><b>O volume manda no local</b><span class="mono">SUBCUTÂNEO ~1 ML · DELTOIDE 2 ML · COXA ~4 ML</span></div></div>
+      </div>
+      <figure class="adesivo meme-prev"><img src="../img/meme-seringa-medicada.jpg" alt=""></figure>
+      <figure class="adesivo foto mesa"><img src="../img/foto-mesa-reducao-danos.jpg" alt=""><figcaption class="mono">DESCARTE: OK</figcaption></figure>
+      <svg class="g brilho b3" data-pop viewBox="0 0 100 100"><use href="#g-brilho"/></svg>
+    </section>
+
+    <!-- 09 · O ANO EM SERINGAS (texto trocado a cada fase pelo main.js) -->
+    <section class="slide s9" data-n="9">
+      <div class="chip" id="s9-chip">FASE 1 / 5 · JAN</div>
+      <p class="anchor s9-frase" id="s9-frase"></p>
+      <div class="sigma"><span class="mono">SERINGAS ATÉ AQUI</span><span class="display" id="s9-sigma">031</span></div>
+      <div class="fase-total"><span class="display" id="s9-total">31</span><span class="mono" id="s9-total-l">SERINGAS EM JANEIRO</span></div>
+      <span class="seta">→</span>
+      <figure class="adesivo foto chuco"><img src="../img/meme-chucodromo.jpg" alt=""></figure>
+    </section>
+
+    <!-- 10 · O TOTAL -->
+    <section class="slide s10" data-n="10">
+      <div class="chip" data-in>365 DIAS</div>
+      <div class="total"><span class="display espectro" id="n794">794</span><span class="rot-total" data-in>SERINGAS</span></div>
+      <div class="quebra" data-in>
+        <p><b>334</b> de 1 mL · <b>399</b> de 3 mL · <b>61</b> de 5 mL</p>
+        <p class="mono">1.588 AGULHAS: 794 DE 40X12 PARA ASPIRAR · 460 DE 25X7 E 334 DE 13X4,5 PARA APLICAR</p>
+      </div>
+      <svg class="g brilho b4" data-pop viewBox="0 0 100 100"><use href="#g-brilho"/></svg>
+    </section>
+
+    <!-- 11 · DE VOLTA AO MUNDO REAL (tela dividida; depois da entrada, tudo para) -->
+    <section class="slide s11" data-n="11">
+      <div class="lado esq">
+        <span class="mono">UNIVERSO PARALELO</span>
+        <div class="riscado"><span class="display">794</span><i class="risco"></i></div>
+        <span class="mono">SERINGAS</span>
+        <figure class="adesivo meme-berlim"><img src="../img/meme-berlim.jpg" alt=""></figure>
+      </div>
+      <div class="lado dir">
+        <span class="mono">VIDA REAL</span>
+        <span class="display" id="n1009">1.009</span>
+        <span class="mono">COMPRIMIDOS</span>
+        <p class="anchor fatos">5 moléculas · 5 configurações · 1 ano</p>
+      </div>
+    </section>
+
+    <!-- 12 · PRÓXIMOS PASSOS -->
+    <section class="slide s12" data-n="12">
+      <h2 class="display titulo-prox" data-cromo data-split><span class="ln">PRÓXIMOS</span><span class="ln">PASSOS</span></h2>
+      <div class="prox-po" data-in><p>Usar mais pó</p></div>
+      <p class="mono prox-leg" data-in>Compactado, em formato de comprimido ou pílula, com prescrição médica e bula.</p>
+      <svg class="g seta-curva s2" data-pop viewBox="0 0 200 120"><use href="#g-seta"/></svg>
+    </section>
+
+    <!-- 13 · OBRIGADO -->
+    <section class="slide s13" data-n="13">
+      <h2 class="display obrigado" data-cromo data-split><span class="ln">OBRIGADO</span></h2>
+      <svg class="g brilho b5" data-pop viewBox="0 0 100 100"><use href="#g-brilho"/></svg>
+      <svg class="g brilho b6" data-pop viewBox="0 0 100 100"><use href="#g-brilho"/></svg>
+      <div class="letreiro l-meio" aria-hidden="true"><div class="corre"><span>OBRIGADO ✦ OBRIGADO ✦ OBRIGADO ✦ OBRIGADO ✦ OBRIGADO ✦ OBRIGADO ✦ OBRIGADO ✦&nbsp;</span><span>OBRIGADO ✦ OBRIGADO ✦ OBRIGADO ✦ OBRIGADO ✦ OBRIGADO ✦ OBRIGADO ✦ OBRIGADO ✦&nbsp;</span></div></div>
+    </section>
+  </div>
+
+  <!-- rótulos dos objetos 3D (mesmos px) -->
+  <div id="rotulos"></div>
+
+  <!-- camada fixa: numeração, selo girando, linha do tempo das fases -->
+  <div class="global">
+    <span class="num-slide" id="num-slide">01 / 13</span>
+    <svg class="selo" viewBox="0 0 200 200" aria-hidden="true">
+      <defs><path id="circ" d="M100,100 m-74,0 a74,74 0 1,1 148,0 a74,74 0 1,1 -148,0"/></defs>
+      <circle cx="100" cy="100" r="98" class="selo-bg"/>
+      <text><textPath href="#circ">2026 ✦ EM DOSES ✦ 2026 ✦ EM DOSES ✦</textPath></text>
+      <use href="#g-brilho" x="70" y="70" width="60" height="60"/>
+    </svg>
+    <div class="linha" id="linha"></div>
+  </div>
+
+  <button id="start" class="start">COMEÇAR <span>→</span></button>
+
+  <!-- tela de senha (bloqueio simples) -->
+  <div id="portao" class="portao">
+    <span class="mono p-topo" data-in>ACESSO RESTRITO</span>
+    <h1 class="display p-titulo" data-in><span class="ln">2026</span><span class="ln p-em">EM DOSES</span></h1>
+    <div class="p-direita">
+      <span class="mono p-rot" data-in>SENHA</span>
+      <div class="pin" data-in><span class="casa"></span><span class="casa"></span><span class="casa"></span><span class="casa"></span></div>
+      <span class="mono dica" data-in>DIGITE OS 4 NÚMEROS</span>
+    </div>
+    <input type="password" inputmode="numeric" autocomplete="off" maxlength="4" aria-label="Senha">
+  </div>
+</div>
+</div>
+
+<!-- grafismos reutilizáveis -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="g-brilho" viewBox="0 0 100 100"><path d="M50 0 C54 34 66 46 100 50 C66 54 54 66 50 100 C46 66 34 54 0 50 C34 46 46 34 50 0Z" fill="currentColor"/></symbol>
+    <symbol id="g-seta" viewBox="0 0 200 120"><path d="M8 100 C 50 20, 120 10, 170 48" fill="none" stroke="currentColor" stroke-width="12" stroke-linecap="round"/><path d="M146 22 L178 52 L136 64" fill="none" stroke="currentColor" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  </defs>
+</svg>
+
+<audio id="trilha" src="../audio/trilha.mp3" loop preload="auto"></audio>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
